@@ -1,0 +1,371 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>山东财经大学</title>
+<link href="css/css.css" rel="stylesheet" type="text/css" />
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="content">
+<div class="head">
+  <div class="head_1">
+    <div class="top">
+      <div class="top_logo"><img src="img/logo.jpg" /></div>
+      <div class="top_zixun">
+        <ul>
+          <li><a href="#">加入收藏</a></li>
+          <li>|</li>
+          <li><a href="#">设为首页</a></li>
+        </ul>
+        <div class="tel">
+          <div class="dianh"><span>0531—58057258</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <ul>
+        <li><a href="index.html">首&nbsp;页</a></li>
+        <li>|</li>
+        <li><a href="jianjie.html">学校简介</a></li>
+        <li>|</li>
+        <li><a href="#">校园风光</a></li>
+        <li>|</li>
+        <li><a href="dongtai.html">招生动态</a></li>
+        <li>|</li>
+        <li><a href="dongtai.html">专业设置</a></li>
+        <li>|</li>
+        <li><a href="#">招生简章</a></li>
+        <li>|</li>
+        <li><a href="baoming.html">网上报名</a></li>
+      </ul>
+    </div>
+    <div id="win">
+      <ul id="picChange">
+        <li><img src="img/banner.jpg"  width="990" height="310"/></li>
+        <li><img src="img/banner2.jpg"  width="990" height="310"/></li>
+        <li><img src="img/banner3.jpg"  width="990" height="310"/></li>
+      </ul>
+    </div>
+  </div>
+  <script type="text/javascript" src="js/picChange-0.3.2.js"></script> 
+  <script type="text/javascript">
+//直接切换效果
+//$pic("picChange").picChange();
+//淡出效果
+$pic("picChange").picChange({changeStyle:"fade",time:250,interTime:5000});
+//向上移出效果
+//$pic("picChange").picChange({changeStyle:"move",time:250,direction:"up"});
+//向上联动效果
+//$pic("picChange").picChange({changeStyle:"wheel",time:250,direction:"up"});
+//以下为页面测试函数，并非picChange的使用方法，使用方法如上
+function func(){
+	//恢复html代码原状
+	var my_time = document.getElementById("time").value;
+	var my_changeStyle = document.getElementById("changeStyle").value;
+	var my_direction = document.getElementById("direction").value;
+	var my_isClick = document.getElementById("isclick").checked;
+	var my_intertime = document.getElementById("intertime").value;
+	//alert(my_time+" "+my_changeStyle+" "+my_direction+" "+my_isClick);
+	$pic("picChange").picChange({
+		changeStyle:my_changeStyle,
+		time:my_time,
+		direction:my_direction,
+		isClick:my_isClick,
+		interTime:my_intertime
+	});
+	var tmpImg = document.getElementById("picChange").getElementsByTagName("img");
+	var tmpLength = tmpImg.length;
+	for(var n=0;n<tmpLength;n++)
+	{
+		tmpImg[n].style.top = "";
+		tmpImg[n].style.left = "";
+		setAlpha(tmpImg[n],100);
+		if(n==0)
+			tmpImg[n].style.display = "block";
+		else
+			tmpImg[n].style.display = "";
+	}
+	var showText = "改变成功！当前模式：";
+	if(my_changeStyle == "move" || my_changeStyle == "wheel")
+	{
+		showText += "向"+document.getElementById("direction").options[document.getElementById("direction").selectedIndex].text+document.getElementById("changeStyle").options[document.getElementById("changeStyle").selectedIndex].text;
+		showText += "，"+my_time+"毫秒，每隔"+my_intertime/1000+"秒切换。";
+	}
+	else if(my_changeStyle == "fade")
+	{
+		showText += document.getElementById("changeStyle").options[document.getElementById("changeStyle").selectedIndex].text;
+		showText += "，"+my_time+"毫秒，每隔"+my_intertime/1000+"秒切换。";
+	}
+	else
+	{
+		showText += document.getElementById("changeStyle").options[document.getElementById("changeStyle").selectedIndex].text;
+	}
+	document.getElementById("show").innerHTML = showText;
+}
+</script> 
+</div>
+<div class="main">
+  <div class="main_1">
+    <div class="box">
+      <div class="box_lm">
+        <div class="box_lm_1"><span>最新公告</span><a href="#"><img src="img/m.jpg" /></a></div>
+        <div class="box_lm_2">
+          <ul>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+          </ul>
+        </div>
+      </div>
+      <!--
+!--> 
+      <!--
+
+!-->
+      
+      <div class="box_lm_3">
+        <div class="box_lm_3_1"><span>新闻资讯</span><a href="#"><img src="img/m.jpg" /></a></div>
+        <div class="box_lm_3_2">
+          <ul>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="box_lm_5">
+        <div class="box_lm_5_1"><span>录取查询</span><a href="#"><img src="img/m.jpg" /></a></div>
+        <div class="box_lm_5_2"><span>请输入查询编号</span>
+          <input type="text" name="" id="kuang" value="">
+          <input name="" type="submit" value="提交"  id="an"/>
+          <a href="#"><img src="img/baoming.jpg" /></a> </div>
+      </div>
+    </div>
+    <div class="box_2">
+    <div class="zhans">
+    <ul>
+    <li><a href="#">首页</a></li>
+    <li>>></li>
+    <li><a href="#">校园展示</a></li>
+    </ul>
+    </div>
+     <div class="biao" style="font-size:12px">
+       <form id="form1" name="form1" method="post" action="" style="background:#CCC; border:#000 1px solid;">
+         <table align="center">
+           <tr>
+            <td width="646" height="30" align="center" bgcolor="#FF0000">网上报名</td>
+           </tr>
+           </table>
+           <table width="646" height="267" cellspacing="8">
+           <tr>
+             <td width="85">专业：</td>
+             <td width="334"><label for="select"></label>
+               <select name="select" id="select">
+                 <option>请选择</option>
+               </select>
+               <span style="color:#F00"> *</span></td>
+             <td width="205">请正确选择。</td>
+            
+           </tr>
+           <tr>
+             <td>姓名：</td>
+             <td><label for="textfield2"></label>
+               <input name="textfield" type="text" id="textfield2" size="15" />
+              <span style="color:#F00"> *</span></td>
+             <td>&nbsp;</td>
+        
+           </tr>
+           <tr>
+             <td>年龄：</td>
+             <td><label for="select2"></label>
+               <select name="select2" id="select2">
+                 <option>15</option>
+                 <option>16</option>
+                 <option>17</option>
+                 <option>18</option>
+                 <option>19</option>
+                 <option>20</option>
+                 <option>21</option>
+                 <option>22</option>
+                 <option>23</option>
+                 <option>24</option>
+                 <option>25</option>
+                 <option>26</option>
+                 <option>27</option>
+                 <option>28</option>
+                 <option>29</option>
+               </select>
+               <span style="color:#F00"> *</span></td>
+             <td>&nbsp;</td>
+           
+           </tr>
+           <tr>
+             <td>性别：</td>
+             <td><input type="radio" name="radio" id="radio" value="radio" />
+               <label for="radio">女
+                 <input type="radio" name="radio2" id="radio2" value="radio2" />
+               男</label></td>
+             
+          
+           </tr>
+           <tr>
+             <td>出生日期：</td>
+             <td><label for="select3"></label>
+               <select name="select3" id="select3">
+                 <option>请选择</option>
+               </select>
+               年
+               <label for="select4"></label>
+               <select name="select4" id="select4">
+                 <option>请选择</option>
+               </select>
+               月
+               <label for="select5"></label>
+               <select name="select5" id="select5">
+                 <option>请选择</option>
+               </select>
+               日<span style="color:#F00"> *</span></td>
+             <td>请务必填写正确</td>
+            
+           </tr>
+           <tr>
+             <td>身份证号码：</td>
+             <td><label for="textfield3"></label>
+               <input type="text" name="textfield2" id="textfield3" />
+               <span style="color:#F00"> *</span></td>
+             <td>没有办理者填：无</td>
+        
+           </tr>
+           <tr>
+             <td>民族：</td>
+             <td><label for="textfield4"></label>
+               <input name="textfield3" type="text" id="textfield4" size="10" />
+               <span style="color:#F00"> *</span></td>
+             <td>&nbsp;</td>
+             
+           </tr>
+           <tr>
+             <td>籍贯：</td>
+             <td><label for="select6"></label>
+               <select name="select6" id="select6">
+                 <option>请选择</option>
+               </select>
+               <span style="color:#F00"> *</span></td>
+             <td>&nbsp;</td>
+            
+           </tr>
+           <tr>
+             <td>现学历：</td>
+             <td><label for="textfield5"></label>
+               <input name="textfield4" type="text" id="textfield5" size="15" />
+               <span style="color:#F00"> *</span></td>
+  
+          
+           </tr>
+            <tr>
+             <td>毕业学校：</td>
+             <td><label for="textfield6"></label>
+               <input type="text" name="textfield5" id="textfield6" />
+               <span style="color:#F00"> *</span></td>
+            
+           
+           </tr>
+            <tr>
+             <td>政治面貌：</td>
+             <td><label for="select7"></label>
+               <select name="select7" id="select7">
+                 <option>请选择</option>
+               </select>
+               <span style="color:#F00"> *</span></td>
+             <td>&nbsp;</td>
+          
+           </tr>
+            <tr>
+             <td>家庭住址：</td>
+             <td><label for="textfield7"></label>
+               <input type="text" name="textfield6" id="textfield7" />
+               <span style="color:#F00"> *</span></td>
+             <td>学校寄通知书用，请务必填写正确！</td>
+           
+           </tr>
+            <tr>
+             <td>所报学历：</td>
+             <td><label for="textfield8"></label>
+               <input type="text" name="textfield7" id="textfield8" />
+               <span style="color:#F00"> *</span></td>
+             <td>该栏填写大专或本科</td>
+        
+           </tr>
+            <tr>
+             <td>手机号码：</td>
+             <td><label for="textfield9"></label>
+               <input type="text" name="textfield8" id="textfield9" />
+               <span style="color:#F00"> *</span></td>
+             <td>此个人内容如没有请填写无</td>
+           
+           </tr>
+            <tr>
+             <td>邮编：</td>
+             <td><label for="textfield10"></label>
+               <input name="textfield9" type="text" id="textfield10" size="15" />
+               <span style="color:#F00"> *</span></td>
+             <td>&nbsp;</td>
+          
+           </tr>
+            <tr>
+             <td>备注：</td>
+             <td><label for="textarea"></label>
+               <textarea name="textarea" id="textarea" cols="45" rows="5"></textarea></td>
+             <td>请填总分</td>
+       
+           </tr>
+            <tr>
+             <td>验证码：</td>
+             <td><label for="textfield11"></label>
+               <input name="textfield10" type="text" id="textfield11" size="15" />
+               <span style="color:#F00"> *</span></td>
+             <td>&nbsp;</td>
+         
+           </tr>
+         </table>
+       </form>
+     </div>
+    </div>
+    </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer_1">
+      <div class="xian"></div>
+      <div class="foot">
+        <div class="yq">
+          <ul>
+            <li><a href="#">友情链接：</a></li>
+            <li><a href="#">财经大学</a></li>
+            <li>|</li>
+            <li><a href="#">微畅信息</a></li>
+            <li>|</li>
+            <li><a href="#">财经大学</a></li>
+            <li>|</li>
+            <li><a href="#">微畅信息</a></li>
+          </ul>
+        </div>
+        <div class="bq"><img src="img/foot_logo.png" />
+          <ul>
+            <li>版权所有：山东财经大学</li>
+            <li>电话：0531—58057258 &nbsp;13589024680 </li>
+            <li>地址：<a href="http://www.mycodes.net/" target="_blank">源码之家</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

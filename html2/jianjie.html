@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>山东财经大学</title>
+<link href="css/css.css" rel="stylesheet" type="text/css" />
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<div class="content">
+<div class="head">
+  <div class="head_1">
+    <div class="top">
+      <div class="top_logo"><img src="img/logo.jpg" /></div>
+      <div class="top_zixun">
+        <ul>
+          <li><a href="#">加入收藏</a></li>
+          <li>|</li>
+          <li><a href="#">设为首页</a></li>
+        </ul>
+        <div class="tel">
+          <div class="dianh"><span>0531—58057258</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="nav">
+      <ul>
+        <li><a href="index.html">首&nbsp;页</a></li>
+        <li>|</li>
+        <li><a href="#">学校简介</a></li>
+        <li>|</li>
+        <li><a href="zhanshi.html">校园风光</a></li>
+        <li>|</li>
+        <li><a href="dongtai.html">招生动态</a></li>
+        <li>|</li>
+        <li><a href="dongtai.html">专业设置</a></li>
+        <li>|</li>
+        <li><a href="#">招生简章</a></li>
+        <li>|</li>
+        <li><a href="baoming.html">网上报名</a></li>
+      </ul>
+    </div>
+    <div id="win">
+      <ul id="picChange">
+        <li><img src="img/banner.jpg"  width="990" height="310"/></li>
+        <li><img src="img/banner2.jpg"  width="990" height="310"/></li>
+        <li><img src="img/banner3.jpg"  width="990" height="310"/></li>
+      </ul>
+    </div>
+  </div>
+  <script type="text/javascript" src="js/picChange-0.3.2.js"></script> 
+  <script type="text/javascript">
+//直接切换效果
+//$pic("picChange").picChange();
+//淡出效果
+$pic("picChange").picChange({changeStyle:"fade",time:250,interTime:5000});
+//向上移出效果
+//$pic("picChange").picChange({changeStyle:"move",time:250,direction:"up"});
+//向上联动效果
+//$pic("picChange").picChange({changeStyle:"wheel",time:250,direction:"up"});
+//以下为页面测试函数，并非picChange的使用方法，使用方法如上
+function func(){
+	//恢复html代码原状
+	var my_time = document.getElementById("time").value;
+	var my_changeStyle = document.getElementById("changeStyle").value;
+	var my_direction = document.getElementById("direction").value;
+	var my_isClick = document.getElementById("isclick").checked;
+	var my_intertime = document.getElementById("intertime").value;
+	//alert(my_time+" "+my_changeStyle+" "+my_direction+" "+my_isClick);
+	$pic("picChange").picChange({
+		changeStyle:my_changeStyle,
+		time:my_time,
+		direction:my_direction,
+		isClick:my_isClick,
+		interTime:my_intertime
+	});
+	var tmpImg = document.getElementById("picChange").getElementsByTagName("img");
+	var tmpLength = tmpImg.length;
+	for(var n=0;n<tmpLength;n++)
+	{
+		tmpImg[n].style.top = "";
+		tmpImg[n].style.left = "";
+		setAlpha(tmpImg[n],100);
+		if(n==0)
+			tmpImg[n].style.display = "block";
+		else
+			tmpImg[n].style.display = "";
+	}
+	var showText = "改变成功！当前模式：";
+	if(my_changeStyle == "move" || my_changeStyle == "wheel")
+	{
+		showText += "向"+document.getElementById("direction").options[document.getElementById("direction").selectedIndex].text+document.getElementById("changeStyle").options[document.getElementById("changeStyle").selectedIndex].text;
+		showText += "，"+my_time+"毫秒，每隔"+my_intertime/1000+"秒切换。";
+	}
+	else if(my_changeStyle == "fade")
+	{
+		showText += document.getElementById("changeStyle").options[document.getElementById("changeStyle").selectedIndex].text;
+		showText += "，"+my_time+"毫秒，每隔"+my_intertime/1000+"秒切换。";
+	}
+	else
+	{
+		showText += document.getElementById("changeStyle").options[document.getElementById("changeStyle").selectedIndex].text;
+	}
+	document.getElementById("show").innerHTML = showText;
+}
+</script> 
+</div>
+<div class="main">
+  <div class="main_1">
+    <div class="box">
+      <div class="box_lm">
+        <div class="box_lm_1"><span>最新公告</span><a href="#"><img src="img/m.jpg" /></a></div>
+        <div class="box_lm_2">
+          <ul>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+            <li><a href="#">最新公告最新公告</a></li>
+          </ul>
+        </div>
+      </div>
+      <!--
+!--> 
+      <!--
+
+!-->
+      
+      <div class="box_lm_3">
+        <div class="box_lm_3_1"><span>新闻资讯</span><a href="#"><img src="img/m.jpg" /></a></div>
+        <div class="box_lm_3_2">
+          <ul>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+            <li><a href="#">新闻资讯新闻资讯新闻资讯</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="box_lm_5">
+        <div class="box_lm_5_1"><span>录取查询</span><a href="#"><img src="img/m.jpg" /></a></div>
+        <div class="box_lm_5_2"><span>请输入查询编号</span>
+          <input type="text" name="" id="kuang" value="">
+          <input name="" type="submit" value="提交"  id="an"/>
+          <a href="#"><img src="img/baoming.jpg" /></a> </div>
+      </div>
+    </div>
+    <div class="box_2">
+    <div class="jj">
+    <ul>
+    <li><a href="#">首页</a></li>
+    <li>>></li>
+    <li><a href="#">学校简介</a></li>
+    </ul>
+    </div>
+     <div class="zs"><img src="img/zhanshi.jpg" width="600" height="300" /><span>山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学山东财经大学</span></div>
+    </div>
+    </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer_1">
+      <div class="xian"></div>
+      <div class="foot">
+        <div class="yq">
+          <ul>
+            <li><a href="#">友情链接：</a></li>
+            <li><a href="#">财经大学</a></li>
+            <li>|</li>
+            <li><a href="#">微畅信息</a></li>
+            <li>|</li>
+            <li><a href="#">财经大学</a></li>
+            <li>|</li>
+            <li><a href="#">微畅信息</a></li>
+          </ul>
+        </div>
+        <div class="bq"><img src="img/foot_logo.png" />
+          <ul>
+            <li>版权所有：山东财经大学</li>
+            <li>电话：0531—58057258 &nbsp;13589024680 </li>
+            <li>地址：<a href="http://www.mycodes.net/" target="_blank">源码之家</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
