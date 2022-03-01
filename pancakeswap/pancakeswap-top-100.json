@@ -1,0 +1,24 @@
+{
+  "name": "PancakeSwap Top 100",
+  "timestamp": "2022-02-09T15:35:22.266Z",
+  "version": {
+    "major": 2,
+    "minor": 16,
+    "patch": 11
+  },
+  "logoURI": "https://assets.trustwalletapp.com/blockchains/smartchain/assets/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82/logo.png",
+  "keywords": [
+    "pancakeswap",
+    "top 100"
+  ],
+  "tokens": [
+    {
+      "name": "III Token",
+      "symbol": "SSS",
+      "address": "0x786Ba7a3B3229B0eD707aFf2731DFa4a4E6CB104",
+      "chainId": 97,
+      "decimals": 18,
+      "logoURI": "https://tokens.pancakeswap.finance/images/0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47.png"
+    }
+  ]
+}
