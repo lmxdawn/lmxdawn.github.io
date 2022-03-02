@@ -1,5 +1,5 @@
 {
-  "name": "PancakeSwap Top 100",
+  "name": "SincereDogeSwap Top 100",
   "timestamp": "2022-02-09T15:35:22.266Z",
   "version": {
     "major": 2,
@@ -8,14 +8,30 @@
   },
   "logoURI": "https://assets.trustwalletapp.com/blockchains/smartchain/assets/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82/logo.png",
   "keywords": [
-    "pancakeswap",
+    "SincereDogeSwap",
     "top 100"
   ],
   "tokens": [
     {
-      "name": "III Token",
-      "symbol": "SSS",
-      "address": "0x786Ba7a3B3229B0eD707aFf2731DFa4a4E6CB104",
+      "name": "PancakeSwap Token",
+      "symbol": "Cake",
+      "address": "0xDC972a34bDAd8d3b1e48Eda71E68D87280495A63",
+      "chainId": 97,
+      "decimals": 18,
+      "logoURI": "https://tokens.pancakeswap.finance/images/0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47.png"
+    },
+    {
+      "name": "Wrapped BNB",
+      "symbol": "WBNB",
+      "address": "0x2660CCd2f2Da242097F5C2374305c3A812CdaD30",
+      "chainId": 97,
+      "decimals": 18,
+      "logoURI": "https://tokens.pancakeswap.finance/images/0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47.png"
+    },
+    {
+      "name": "PancakeSwap Token",
+      "symbol": "TEST",
+      "address": "0x6065558b20f4eb6B5D166694b23285d2c664636e",
       "chainId": 97,
       "decimals": 18,
       "logoURI": "https://tokens.pancakeswap.finance/images/0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47.png"
