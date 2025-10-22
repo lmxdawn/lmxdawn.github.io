@@ -1,0 +1,3756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Gate.io交易所Go后端面试完整指南，包含并发编程、撮合引擎、区块链技术等核心知识点">
+    <meta name="keywords" content="Go,面试,交易所,区块链,撮合引擎,并发编程">
+    <title>Gate.io 交易所 Go 后端面试完整指南</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f7fa;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        /* 桌面端默认显示，但可以隐藏 */
+        @media (min-width: 969px) {
+            .sidebar {
+                transform: translateX(0);
+            }
+            
+            .sidebar.hide {
+                transform: translateX(-100%);
+            }
+            
+            .main-content {
+                transition: margin-left 0.3s ease;
+            }
+            
+            .sidebar.hide ~ .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* 侧边栏滚动条样式 */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #34495e;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        .sidebar h2 {
+            color: #3498db;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar ul li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar ul li a {
+            color: #ecf0f1;
+            text-decoration: none;
+            display: block;
+            padding: 10px 12px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 14px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar ul li a:hover {
+            background: #34495e;
+            color: #3498db;
+        }
+
+        .sidebar ul ul {
+            margin-left: 15px;
+            margin-top: 5px;
+        }
+
+        .sidebar ul ul li a {
+            font-size: 13px;
+            color: #bdc3c7;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            margin-left: 280px;
+            padding: 40px;
+            flex: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .section h3 {
+            color: #34495e;
+            font-size: 22px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .section h4 {
+            color: #555;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .section p {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .section ul, .section ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        .section li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        /* 代码块 */
+        pre {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            margin: 20px 0;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+            max-width: 100%;
+        }
+
+        pre code {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            display: block;
+            white-space: pre;
+            word-wrap: normal;
+            word-break: normal;
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            color: #aaa;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .tag-required {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .tag-important {
+            background: #f39c12;
+            color: white;
+        }
+
+        .tag-advanced {
+            background: #9b59b6;
+            color: white;
+        }
+
+        /* 提示框 */
+        .tip-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+
+        .tip-box.info {
+            background: #e8f4fd;
+            border-color: #3498db;
+            color: #2c5f7f;
+        }
+
+        .tip-box.warning {
+            background: #fff3cd;
+            border-color: #f39c12;
+            color: #856404;
+        }
+
+        .tip-box.success {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        .tip-box strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* 表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* 回到顶部 */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #3498db;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .back-to-top:hover {
+            background: #2980b9;
+            transform: translateY(-3px);
+        }
+
+        /* 汉堡菜单按钮 - 所有设备都显示 */
+        .menu-toggle {
+            display: block;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: #3498db;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 24px;
+            transition: all 0.3s;
+            animation: pulse 2s ease-in-out 3;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(52, 152, 219, 0.6);
+            }
+        }
+
+        .menu-toggle:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+            animation: none;
+        }
+
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .menu-toggle.active {
+            background: #e74c3c;
+            animation: none;
+        }
+
+        /* 桌面端按钮稍微透明 */
+        @media (min-width: 969px) {
+            .menu-toggle {
+                opacity: 0.8;
+            }
+            
+            .menu-toggle:hover {
+                opacity: 1;
+            }
+        }
+
+        /* 移动端遮罩 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* 响应式 - 平板 */
+        @media (max-width: 968px) {
+            .menu-toggle {
+                opacity: 1 !important; /* 移动端完全不透明 */
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 80px 30px 40px;
+            }
+
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .section h2 {
+                font-size: 24px;
+            }
+
+            .section h3 {
+                font-size: 20px;
+            }
+        }
+
+        /* 响应式 - 手机 */
+        @media (max-width: 640px) {
+            body {
+                font-size: 14px;
+            }
+
+            .sidebar {
+                width: 80%;
+                max-width: 280px;
+            }
+
+            .main-content {
+                padding: 70px 15px 30px;
+            }
+
+            .header {
+                padding: 25px 20px;
+                margin-bottom: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .section {
+                padding: 20px 15px;
+                margin-bottom: 20px;
+            }
+
+            .section h2 {
+                font-size: 20px;
+            }
+
+            .section h3 {
+                font-size: 18px;
+            }
+
+            .section h4 {
+                font-size: 16px;
+            }
+
+            /* 代码块优化 */
+            pre {
+                padding: 15px;
+                margin: 15px -15px;
+                border-radius: 0;
+                font-size: 12px;
+            }
+
+            pre code {
+                font-size: 12px;
+            }
+
+            .code-header {
+                padding: 8px 15px;
+                margin: 15px -15px 0;
+                font-size: 11px;
+                border-radius: 0;
+            }
+
+            .copy-btn {
+                padding: 4px 10px;
+                font-size: 10px;
+            }
+
+            /* 表格优化 */
+            .section table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                font-size: 13px;
+                margin: 15px 0;
+            }
+
+            table {
+                min-width: auto;
+            }
+
+            table th,
+            table td {
+                padding: 8px;
+                white-space: nowrap;
+                font-size: 12px;
+            }
+
+            /* 架构图优化 */
+            .architecture-diagram {
+                font-size: 10px;
+                padding: 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* 提示框优化 */
+            .tip-box {
+                padding: 12px 15px;
+                margin: 15px -15px;
+                font-size: 13px;
+            }
+
+            /* 标签优化 */
+            .tag {
+                font-size: 11px;
+                padding: 3px 10px;
+            }
+
+            /* 回到顶部按钮 */
+            .back-to-top {
+                width: 45px;
+                height: 45px;
+                bottom: 20px;
+                right: 20px;
+                font-size: 20px;
+            }
+        }
+
+        /* 横屏手机优化 */
+        @media (max-width: 896px) and (orientation: landscape) {
+            .sidebar {
+                width: 250px;
+            }
+
+            .main-content {
+                padding: 60px 20px 30px;
+            }
+        }
+
+        /* 超小屏幕 */
+        @media (max-width: 375px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .section h2 {
+                font-size: 18px;
+            }
+
+            .section h3 {
+                font-size: 16px;
+            }
+
+            pre code {
+                font-size: 11px;
+            }
+        }
+
+        /* 架构图样式 */
+        .architecture-diagram {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 2px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <!-- 汉堡菜单按钮 -->
+    <button class="menu-toggle" id="menuToggle" aria-label="菜单">
+        ☰
+    </button>
+
+    <!-- 侧边栏遮罩（移动端点击关闭菜单） -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="container">
+        <!-- 侧边栏导航 -->
+        <nav class="sidebar">
+            <h2>📚 目录导航</h2>
+            <ul>
+                <li><a href="#intro">介绍</a></li>
+                <li><a href="#section1">1. Go 并发编程</a>
+                    <ul>
+                        <li><a href="#gmp">GMP 调度模型</a></li>
+                        <li><a href="#channel">Channel 实现</a></li>
+                        <li><a href="#lock">并发安全与锁</a></li>
+                        <li><a href="#context">Context 使用</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section2">2. 交易所核心业务</a>
+                    <ul>
+                        <li><a href="#match-engine">撮合引擎</a></li>
+                        <li><a href="#asset-system">资产系统</a></li>
+                        <li><a href="#reconciliation">流水与对账</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section3">3. 高性能系统设计</a>
+                    <ul>
+                        <li><a href="#rate-limiter">限流器</a></li>
+                        <li><a href="#snowflake">分布式ID</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section4">4. 区块链技术实战</a>
+                    <ul>
+                        <li><a href="#wallet">钱包地址生成</a></li>
+                        <li><a href="#deposit-watch">充值监听</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section5">5. 系统设计大题</a>
+                    <ul>
+                        <li><a href="#trading-system">现货交易系统</a></li>
+                        <li><a href="#deposit-withdraw">充提系统</a></li>
+                    </ul>
+                </li>
+                <li><a href="#section6">6. 算法与数据结构</a>
+                    <ul>
+                        <li><a href="#lru">LRU Cache</a></li>
+                        <li><a href="#consistent-hash">一致性Hash</a></li>
+                    </ul>
+                </li>
+                <li><a href="#interview">7. 面试模拟</a></li>
+                <li><a href="#summary">8. 总结建议</a></li>
+            </ul>
+        </nav>
+
+        <!-- 主内容 -->
+        <main class="main-content">
+            <div class="header" id="intro">
+                <h1>🚀 Gate.io 交易所 Go 后端面试完整指南</h1>
+                <p>从基础到进阶，从原理到实战，助你拿下 Offer！</p>
+            </div>
+
+            <!-- 第1部分：Go并发编程 -->
+            <section class="section" id="section1">
+                <h2>1. Go 并发编程深度解析</h2>
+                
+                <div id="gmp">
+                    <h3>1.1 GMP 调度模型 <span class="tag tag-required">必考</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        请解释 Go 的 GMP 调度模型
+                    </div>
+
+                    <h4>标准回答：</h4>
+                    <p><strong>GMP 模型包含三个核心组件：</strong></p>
+                    <ul>
+                        <li><strong>G (Goroutine)</strong>：用户态的轻量级线程，包含了要执行的代码、栈空间、状态信息</li>
+                        <li><strong>M (Machine)</strong>：操作系统线程，真正执行 G 的实体</li>
+                        <li><strong>P (Processor)</strong>：调度器，维护 G 的本地队列，负责管理 G 的执行</li>
+                    </ul>
+
+                    <p><strong>核心工作机制：</strong></p>
+                    <ol>
+                        <li>每个 P 维护一个本地 G 队列（最多 256 个）</li>
+                        <li>全局有一个 G 队列（无界）</li>
+                        <li>M 需要绑定 P 才能执行 G</li>
+                        <li><strong>Work Stealing</strong>：当 P 的本地队列为空时，会从其他 P 或全局队列偷取 G</li>
+                    </ol>
+
+                    <div class="tip-box success">
+                        <strong>✅ 优势</strong>
+                        <ul>
+                            <li>减少锁竞争（本地队列无锁访问）</li>
+                            <li>充分利用多核 CPU</li>
+                            <li>抢占式调度（防止某个 G 长期占用）</li>
+                        </ul>
+                    </div>
+
+                    <h4>代码示例：</h4>
+                    <div class="code-header">
+                        <span>gmp_demo.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "runtime"
+    "sync"
+    "time"
+)
+
+// 演示 GOMAXPROCS 的影响
+func DemoGMP() {
+    // 设置 P 的数量为 2
+    runtime.GOMAXPROCS(2)
+    
+    var wg sync.WaitGroup
+    
+    // 启动 10 个 goroutine
+    for i := 0; i < 10; i++ {
+        wg.Add(1)
+        go func(id int) {
+            defer wg.Done()
+            
+            // CPU 密集型任务
+            sum := 0
+            for j := 0; j < 1e8; j++ {
+                sum += j
+            }
+            fmt.Printf("Goroutine %d 完成\n", id)
+        }(i)
+    }
+    
+    wg.Wait()
+    fmt.Printf("当前 Goroutine 数量: %d\n", runtime.NumGoroutine())
+}
+
+// 演示 Goroutine 泄漏
+func BadGoroutineExample() {
+    ch := make(chan int)
+    
+    // 这个 goroutine 会永远阻塞，造成泄漏
+    go func() {
+        val := <-ch // 永远等待
+        fmt.Println(val)
+    }()
+    
+    // 忘记向 channel 发送数据
+    time.Sleep(time.Second)
+}
+
+// 正确的做法：使用 context 控制
+func GoodGoroutineExample() {
+    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+    defer cancel()
+    
+    ch := make(chan int)
+    
+    go func() {
+        select {
+        case val := <-ch:
+            fmt.Println(val)
+        case <-ctx.Done():
+            fmt.Println("超时，goroutine 退出")
+            return
+        }
+    }()
+    
+    time.Sleep(2 * time.Second) // 模拟超时
+}
+
+func main() {
+    DemoGMP()
+}</code></pre>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ 如何排查 Goroutine 泄漏？</strong>
+                        <ol>
+                            <li>使用 <code>runtime.NumGoroutine()</code> 监控数量</li>
+                            <li>使用 pprof 查看 goroutine 堆栈：<code>http://localhost:6060/debug/pprof/goroutine</code></li>
+                            <li>使用 <code>runtime.Stack()</code> 打印所有 goroutine</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div id="channel">
+                    <h3>1.2 Channel 实现原理 <span class="tag tag-required">必考</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        Channel 的底层实现是什么？有缓冲和无缓冲的区别？
+                    </div>
+
+                    <h4>底层结构：</h4>
+                    <pre><code class="language-go">type hchan struct {
+    qcount   uint           // 当前队列中的元素个数
+    dataqsiz uint           // 环形队列的大小
+    buf      unsafe.Pointer // 指向环形队列的指针
+    elemsize uint16         // 元素大小
+    closed   uint32         // 是否关闭
+    sendx    uint           // 发送索引
+    recvx    uint           // 接收索引
+    recvq    waitq          // 接收等待队列（阻塞的 goroutine）
+    sendq    waitq          // 发送等待队列
+    lock     mutex          // 互斥锁
+}</code></pre>
+
+                    <h4>关键区别：</h4>
+                    <table>
+                        <tr>
+                            <th>特性</th>
+                            <th>无缓冲 Channel</th>
+                            <th>有缓冲 Channel</th>
+                        </tr>
+                        <tr>
+                            <td>创建</td>
+                            <td><code>make(chan int)</code></td>
+                            <td><code>make(chan int, 10)</code></td>
+                        </tr>
+                        <tr>
+                            <td>发送</td>
+                            <td>必须有接收者才能完成</td>
+                            <td>缓冲未满时不阻塞</td>
+                        </tr>
+                        <tr>
+                            <td>接收</td>
+                            <td>必须有发送者才能完成</td>
+                            <td>缓冲非空时不阻塞</td>
+                        </tr>
+                        <tr>
+                            <td>同步性</td>
+                            <td>同步操作</td>
+                            <td>异步操作</td>
+                        </tr>
+                    </table>
+
+                    <h4>代码示例：</h4>
+                    <div class="code-header">
+                        <span>channel_demo.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "time"
+)
+
+// 无缓冲 channel：必须同步
+func UnbufferedChannelDemo() {
+    ch := make(chan int)
+    
+    // 如果没有接收者，这里会永久阻塞
+    go func() {
+        fmt.Println("发送前")
+        ch <- 1 // 阻塞，直到有人接收
+        fmt.Println("发送后")
+    }()
+    
+    time.Sleep(time.Second) // 模拟延迟
+    fmt.Println("接收前")
+    val := <-ch // 此时上面的发送才能完成
+    fmt.Println("接收到:", val)
+}
+
+// 有缓冲 channel：异步
+func BufferedChannelDemo() {
+    ch := make(chan int, 3) // 缓冲区大小为 3
+    
+    // 发送 3 个不会阻塞
+    ch <- 1
+    ch <- 2
+    ch <- 3
+    fmt.Println("发送完成，未阻塞")
+    
+    // 发送第 4 个会阻塞
+    go func() {
+        fmt.Println("发送第4个...")
+        ch <- 4 // 阻塞，直到有人接收
+        fmt.Println("第4个发送成功")
+    }()
+    
+    time.Sleep(time.Second)
+    <-ch // 接收一个，释放一个位置
+}
+
+// Select 多路复用
+func SelectDemo() {
+    ch1 := make(chan string)
+    ch2 := make(chan string)
+    
+    go func() {
+        time.Sleep(time.Second)
+        ch1 <- "from ch1"
+    }()
+    
+    go func() {
+        time.Sleep(2 * time.Second)
+        ch2 <- "from ch2"
+    }()
+    
+    // 谁先准备好就接收谁
+    for i := 0; i < 2; i++ {
+        select {
+        case msg1 := <-ch1:
+            fmt.Println(msg1)
+        case msg2 := <-ch2:
+            fmt.Println(msg2)
+        case <-time.After(3 * time.Second):
+            fmt.Println("超时")
+            return
+        }
+    }
+}</code></pre>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ Channel 使用注意事项</strong>
+                        <ul>
+                            <li>向已关闭的 channel 发送会 panic</li>
+                            <li>从已关闭的 channel 接收会立即返回零值</li>
+                            <li>关闭一个 nil channel 会 panic</li>
+                            <li>关闭 channel 应该由发送方负责</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="lock">
+                    <h3>1.3 并发安全与锁 <span class="tag tag-important">重要</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        实现一个并发安全的计数器，有哪些方案？
+                    </div>
+
+                    <h4>三种实现方案：</h4>
+                    <div class="code-header">
+                        <span>concurrent_counter.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "sync"
+    "sync/atomic"
+    "time"
+)
+
+// 方案1：Mutex（互斥锁）
+type CounterMutex struct {
+    mu    sync.Mutex
+    count int64
+}
+
+func (c *CounterMutex) Inc() {
+    c.mu.Lock()
+    c.count++
+    c.mu.Unlock()
+}
+
+func (c *CounterMutex) Get() int64 {
+    c.mu.Lock()
+    defer c.mu.Unlock()
+    return c.count
+}
+
+// 方案2：RWMutex（读写锁）- 适合读多写少
+type CounterRWMutex struct {
+    mu    sync.RWMutex
+    count int64
+}
+
+func (c *CounterRWMutex) Inc() {
+    c.mu.Lock()
+    c.count++
+    c.mu.Unlock()
+}
+
+func (c *CounterRWMutex) Get() int64 {
+    c.mu.RLock() // 读锁，允许多个读者
+    defer c.mu.RUnlock()
+    return c.count
+}
+
+// 方案3：Atomic（原子操作）- 性能最好
+type CounterAtomic struct {
+    count int64
+}
+
+func (c *CounterAtomic) Inc() {
+    atomic.AddInt64(&c.count, 1)
+}
+
+func (c *CounterAtomic) Get() int64 {
+    return atomic.LoadInt64(&c.count)
+}
+
+// 性能测试
+func BenchmarkCounters() {
+    const goroutines = 1000
+    const increments = 10000
+    
+    // 测试 Mutex
+    var wg sync.WaitGroup
+    counter1 := &CounterMutex{}
+    start := time.Now()
+    for i := 0; i < goroutines; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for j := 0; j < increments; j++ {
+                counter1.Inc()
+            }
+        }()
+    }
+    wg.Wait()
+    fmt.Printf("Mutex: %v, value=%d\n", time.Since(start), counter1.Get())
+    
+    // 测试 Atomic
+    counter2 := &CounterAtomic{}
+    start = time.Now()
+    for i := 0; i < goroutines; i++ {
+        wg.Add(1)
+        go func() {
+            defer wg.Done()
+            for j := 0; j < increments; j++ {
+                counter2.Inc()
+            }
+        }()
+    }
+    wg.Wait()
+    fmt.Printf("Atomic: %v, value=%d\n", time.Since(start), counter2.Get())
+}
+
+func main() {
+    BenchmarkCounters()
+}</code></pre>
+
+                    <h4>性能对比：</h4>
+                    <table>
+                        <tr>
+                            <th>方案</th>
+                            <th>性能</th>
+                            <th>适用场景</th>
+                        </tr>
+                        <tr>
+                            <td>Atomic</td>
+                            <td>⭐⭐⭐⭐⭐</td>
+                            <td>简单的原子操作（加减、交换）</td>
+                        </tr>
+                        <tr>
+                            <td>RWMutex</td>
+                            <td>⭐⭐⭐⭐</td>
+                            <td>读多写少的场景</td>
+                        </tr>
+                        <tr>
+                            <td>Mutex</td>
+                            <td>⭐⭐⭐</td>
+                            <td>复杂的临界区操作</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div id="context">
+                    <h3>1.4 Context 使用（超时控制）<span class="tag tag-important">重要</span></h3>
+                    
+                    <h4>交易所实战：订单超时取消</h4>
+                    <div class="code-header">
+                        <span>context_order.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "context"
+    "fmt"
+    "time"
+)
+
+type Order struct {
+    ID     string
+    Status string
+}
+
+// 下单并设置超时
+func PlaceOrder(ctx context.Context, order *Order) error {
+    // 订单匹配，假设需要 500ms
+    matchDone := make(chan bool)
+    
+    go func() {
+        time.Sleep(500 * time.Millisecond)
+        matchDone <- true
+    }()
+    
+    select {
+    case <-matchDone:
+        order.Status = "matched"
+        return nil
+    case <-ctx.Done():
+        order.Status = "timeout"
+        return ctx.Err()
+    }
+}
+
+func main() {
+    // 设置 300ms 超时
+    ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
+    defer cancel()
+    
+    order := &Order{ID: "ORD001", Status: "pending"}
+    err := PlaceOrder(ctx, order)
+    
+    if err != nil {
+        fmt.Printf("订单 %s 超时: %v\n", order.ID, err)
+    } else {
+        fmt.Printf("订单 %s 成交\n", order.ID)
+    }
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- 第2部分：交易所核心业务 -->
+            <section class="section" id="section2">
+                <h2>2. 交易所核心业务实现</h2>
+                
+                <div id="match-engine">
+                    <h3>2.1 订单撮合引擎 <span class="tag tag-required">核心必考</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        实现一个简单的限价单撮合引擎
+                    </div>
+
+                    <h4>核心设计思路：</h4>
+                    <ul>
+                        <li><strong>订单簿</strong>：用两个 map 存储买卖盘，每个价格一个链表</li>
+                        <li><strong>价格排序</strong>：买单降序（价高优先），卖单升序（价低优先）</li>
+                        <li><strong>撮合原则</strong>：价格优先、时间优先</li>
+                        <li><strong>并发安全</strong>：使用读写锁保护</li>
+                    </ul>
+
+                    <div class="tip-box success">
+                        <strong>✅ 关键点</strong>
+                        <ul>
+                            <li>市价单吃掉对手盘最优价格</li>
+                            <li>限价单只匹配满足价格条件的订单</li>
+                            <li>成交价格是挂单价格（Maker 价格）</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-header">
+                        <span>match_engine.go（完整实现）</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "container/list"
+    "fmt"
+    "sync"
+    "time"
+)
+
+// ============ 订单类型定义 ============
+type OrderSide string
+const (
+    BUY  OrderSide = "BUY"
+    SELL OrderSide = "SELL"
+)
+
+type OrderType string
+const (
+    LIMIT  OrderType = "LIMIT"
+    MARKET OrderType = "MARKET"
+)
+
+// 订单结构
+type Order struct {
+    ID        string
+    UserID    string
+    Side      OrderSide
+    Type      OrderType
+    Price     float64
+    Quantity  float64
+    Filled    float64
+    Status    string
+    CreatedAt time.Time
+}
+
+// 成交记录
+type Trade struct {
+    ID          string
+    BuyOrderID  string
+    SellOrderID string
+    Price       float64
+    Quantity    float64
+    Timestamp   time.Time
+}
+
+// ============ 价格档位 ============
+type PriceLevel struct {
+    Price  float64
+    Orders *list.List
+    Volume float64
+}
+
+// ============ 订单簿 ============
+type OrderBook struct {
+    Symbol    string
+    Bids      map[float64]*PriceLevel
+    BidPrices []float64
+    Asks      map[float64]*PriceLevel
+    AskPrices []float64
+    mu        sync.RWMutex
+}
+
+func NewOrderBook(symbol string) *OrderBook {
+    return &OrderBook{
+        Symbol:    symbol,
+        Bids:      make(map[float64]*PriceLevel),
+        Asks:      make(map[float64]*PriceLevel),
+        BidPrices: []float64{},
+        AskPrices: []float64{},
+    }
+}
+
+// 添加订单到订单簿
+func (ob *OrderBook) AddOrder(order *Order) {
+    ob.mu.Lock()
+    defer ob.mu.Unlock()
+    
+    var levels map[float64]*PriceLevel
+    var prices *[]float64
+    
+    if order.Side == BUY {
+        levels = ob.Bids
+        prices = &ob.BidPrices
+    } else {
+        levels = ob.Asks
+        prices = &ob.AskPrices
+    }
+    
+    level, exists := levels[order.Price]
+    if !exists {
+        level = &PriceLevel{
+            Price:  order.Price,
+            Orders: list.New(),
+            Volume: 0,
+        }
+        levels[order.Price] = level
+        *prices = insertPrice(*prices, order.Price, order.Side == BUY)
+    }
+    
+    level.Orders.PushBack(order)
+    level.Volume += order.Quantity - order.Filled
+}
+
+// 插入价格并保持排序
+func insertPrice(prices []float64, price float64, descending bool) []float64 {
+    i := 0
+    for i < len(prices) {
+        if descending {
+            if price > prices[i] {
+                break
+            }
+        } else {
+            if price < prices[i] {
+                break
+            }
+        }
+        i++
+    }
+    
+    prices = append(prices, 0)
+    copy(prices[i+1:], prices[i:])
+    prices[i] = price
+    return prices
+}
+
+// ============ 撮合引擎 ============
+type MatchEngine struct {
+    OrderBook *OrderBook
+    Trades    []Trade
+    mu        sync.Mutex
+}
+
+func NewMatchEngine(symbol string) *MatchEngine {
+    return &MatchEngine{
+        OrderBook: NewOrderBook(symbol),
+        Trades:    []Trade{},
+    }
+}
+
+// 撮合订单
+func (me *MatchEngine) MatchOrder(order *Order) []Trade {
+    me.mu.Lock()
+    defer me.mu.Unlock()
+    
+    var trades []Trade
+    
+    if order.Type == LIMIT {
+        trades = me.matchLimitOrder(order)
+    } else {
+        trades = me.matchMarketOrder(order)
+    }
+    
+    // 未完全成交的限价单加入订单簿
+    if order.Filled < order.Quantity && order.Type == LIMIT {
+        if order.Filled > 0 {
+            order.Status = "partial"
+        }
+        me.OrderBook.AddOrder(order)
+    }
+    
+    me.Trades = append(me.Trades, trades...)
+    return trades
+}
+
+// 撮合限价单
+func (me *MatchEngine) matchLimitOrder(order *Order) []Trade {
+    trades := []Trade{}
+    
+    var oppositeLevels map[float64]*PriceLevel
+    var oppositePrices []float64
+    
+    if order.Side == BUY {
+        oppositeLevels = me.OrderBook.Asks
+        oppositePrices = me.OrderBook.AskPrices
+    } else {
+        oppositeLevels = me.OrderBook.Bids
+        oppositePrices = me.OrderBook.BidPrices
+    }
+    
+    for len(oppositePrices) > 0 {
+        bestPrice := oppositePrices[0]
+        
+        // 检查价格是否匹配
+        if order.Side == BUY && bestPrice > order.Price {
+            break
+        }
+        if order.Side == SELL && bestPrice < order.Price {
+            break
+        }
+        
+        level := oppositeLevels[bestPrice]
+        
+        for level.Orders.Len() > 0 {
+            element := level.Orders.Front()
+            makerOrder := element.Value.(*Order)
+            
+            // 计算成交量
+            matchQty := minFloat(order.Quantity-order.Filled, 
+                                makerOrder.Quantity-makerOrder.Filled)
+            
+            // 创建成交记录
+            trade := Trade{
+                ID:        fmt.Sprintf("T%d", time.Now().UnixNano()),
+                Price:     bestPrice,
+                Quantity:  matchQty,
+                Timestamp: time.Now(),
+            }
+            
+            if order.Side == BUY {
+                trade.BuyOrderID = order.ID
+                trade.SellOrderID = makerOrder.ID
+            } else {
+                trade.BuyOrderID = makerOrder.ID
+                trade.SellOrderID = order.ID
+            }
+            
+            trades = append(trades, trade)
+            
+            // 更新订单
+            order.Filled += matchQty
+            makerOrder.Filled += matchQty
+            level.Volume -= matchQty
+            
+            if makerOrder.Filled >= makerOrder.Quantity {
+                makerOrder.Status = "filled"
+                level.Orders.Remove(element)
+            }
+            
+            if order.Filled >= order.Quantity {
+                order.Status = "filled"
+                return trades
+            }
+        }
+        
+        if level.Orders.Len() == 0 {
+            delete(oppositeLevels, bestPrice)
+            oppositePrices = oppositePrices[1:]
+            if order.Side == BUY {
+                me.OrderBook.AskPrices = oppositePrices
+            } else {
+                me.OrderBook.BidPrices = oppositePrices
+            }
+        }
+    }
+    
+    return trades
+}
+
+// 撮合市价单
+func (me *MatchEngine) matchMarketOrder(order *Order) []Trade {
+    trades := []Trade{}
+    
+    var oppositeLevels map[float64]*PriceLevel
+    var oppositePrices []float64
+    
+    if order.Side == BUY {
+        oppositeLevels = me.OrderBook.Asks
+        oppositePrices = me.OrderBook.AskPrices
+    } else {
+        oppositeLevels = me.OrderBook.Bids
+        oppositePrices = me.OrderBook.BidPrices
+    }
+    
+    for len(oppositePrices) > 0 && order.Filled < order.Quantity {
+        bestPrice := oppositePrices[0]
+        level := oppositeLevels[bestPrice]
+        
+        for level.Orders.Len() > 0 && order.Filled < order.Quantity {
+            element := level.Orders.Front()
+            makerOrder := element.Value.(*Order)
+            
+            matchQty := minFloat(order.Quantity-order.Filled,
+                               makerOrder.Quantity-makerOrder.Filled)
+            
+            trade := Trade{
+                ID:        fmt.Sprintf("T%d", time.Now().UnixNano()),
+                Price:     bestPrice,
+                Quantity:  matchQty,
+                Timestamp: time.Now(),
+            }
+            
+            if order.Side == BUY {
+                trade.BuyOrderID = order.ID
+                trade.SellOrderID = makerOrder.ID
+            } else {
+                trade.BuyOrderID = makerOrder.ID
+                trade.SellOrderID = order.ID
+            }
+            
+            trades = append(trades, trade)
+            order.Filled += matchQty
+            makerOrder.Filled += matchQty
+            level.Volume -= matchQty
+            
+            if makerOrder.Filled >= makerOrder.Quantity {
+                makerOrder.Status = "filled"
+                level.Orders.Remove(element)
+            }
+        }
+        
+        if level.Orders.Len() == 0 {
+            delete(oppositeLevels, bestPrice)
+            oppositePrices = oppositePrices[1:]
+        }
+    }
+    
+    if order.Filled >= order.Quantity {
+        order.Status = "filled"
+    } else {
+        order.Status = "partial"
+    }
+    
+    return trades
+}
+
+func minFloat(a, b float64) float64 {
+    if a < b {
+        return a
+    }
+    return b
+}
+
+// ============ 测试 ============
+func TestMatchEngine() {
+    engine := NewMatchEngine("BTC/USDT")
+    
+    fmt.Println("=== 添加卖单 ===")
+    sell1 := &Order{
+        ID: "S1", UserID: "user1", Side: SELL, Type: LIMIT,
+        Price: 50000, Quantity: 1.0, Status: "pending",
+        CreatedAt: time.Now(),
+    }
+    sell2 := &Order{
+        ID: "S2", UserID: "user2", Side: SELL, Type: LIMIT,
+        Price: 50100, Quantity: 0.5, Status: "pending",
+        CreatedAt: time.Now(),
+    }
+    engine.OrderBook.AddOrder(sell1)
+    engine.OrderBook.AddOrder(sell2)
+    
+    fmt.Println("=== 买单撮合 ===")
+    buy1 := &Order{
+        ID: "B1", UserID: "user3", Side: BUY, Type: LIMIT,
+        Price: 50000, Quantity: 0.8, Status: "pending",
+        CreatedAt: time.Now(),
+    }
+    
+    trades := engine.MatchOrder(buy1)
+    
+    fmt.Printf("成交记录数: %d\n", len(trades))
+    for _, trade := range trades {
+        fmt.Printf("价格: %.2f, 数量: %.2f, 买单: %s, 卖单: %s\n",
+            trade.Price, trade.Quantity, trade.BuyOrderID, trade.SellOrderID)
+    }
+    
+    fmt.Printf("\n买单状态: %s, 已成交: %.2f/%.2f\n",
+        buy1.Status, buy1.Filled, buy1.Quantity)
+}
+
+func main() {
+    TestMatchEngine()
+}</code></pre>
+                </div>
+
+                <div id="asset-system">
+                    <h3>2.2 资产系统（账户余额管理）<span class="tag tag-required">必考</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        如何保证交易所账户余额的一致性？
+                    </div>
+
+                    <h4>核心设计：双账户模型</h4>
+                    <ul>
+                        <li><strong>可用余额</strong>：用户可以使用的部分</li>
+                        <li><strong>冻结余额</strong>：下单后冻结，等待成交</li>
+                        <li><strong>总余额</strong> = 可用 + 冻结</li>
+                    </ul>
+
+                    <h4>业务流程：</h4>
+                    <ol>
+                        <li><strong>下单</strong>：冻结相应金额</li>
+                        <li><strong>成交</strong>：扣除冻结，对方增加可用</li>
+                        <li><strong>撤单</strong>：解冻未成交部分</li>
+                        <li><strong>流水</strong>：记录每一步变动</li>
+                    </ol>
+
+                    <div class="code-header">
+                        <span>asset_system.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">type Balance struct {
+    Currency  string
+    Available float64 // 可用
+    Frozen    float64 // 冻结
+}
+
+type Account struct {
+    UserID   string
+    Balances map[string]*Balance
+    mu       sync.RWMutex
+}
+
+// 冻结余额（下单时）
+func (a *Account) Freeze(currency string, amount float64) error {
+    a.mu.Lock()
+    defer a.mu.Unlock()
+    
+    balance := a.Balances[currency]
+    if balance.Available < amount {
+        return errors.New("余额不足")
+    }
+    
+    balance.Available -= amount
+    balance.Frozen += amount
+    return nil
+}
+
+// 扣除冻结（成交时）
+func (a *Account) DeductFrozen(currency string, amount float64) error {
+    a.mu.Lock()
+    defer a.mu.Unlock()
+    
+    balance := a.Balances[currency]
+    if balance.Frozen < amount {
+        return errors.New("冻结余额不足")
+    }
+    
+    balance.Frozen -= amount
+    return nil
+}
+
+// 增加可用（成交收到资产）
+func (a *Account) AddAvailable(currency string, amount float64) {
+    a.mu.Lock()
+    defer a.mu.Unlock()
+    
+    balance := a.Balances[currency]
+    balance.Available += amount
+}</code></pre>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ 对账机制</strong>
+                        <ul>
+                            <li>定时检查：可用 + 冻结 = 总资产</li>
+                            <li>流水对账：根据流水表重新计算余额</li>
+                            <li>告警机制：发现不一致立即告警</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="reconciliation">
+                    <h3>2.3 流水表设计与对账 <span class="tag tag-important">重要</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 核心思想</strong>
+                        记录每一笔资产变动，用于审计和对账
+                    </div>
+
+                    <h4>流水表设计：</h4>
+                    <div class="code-header">
+                        <span>transaction_log.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">// 流水类型
+type TransactionType string
+
+const (
+    DEPOSIT    TransactionType = "DEPOSIT"    // 充值
+    WITHDRAW   TransactionType = "WITHDRAW"   // 提现
+    TRADE_BUY  TransactionType = "TRADE_BUY"  // 买入成交
+    TRADE_SELL TransactionType = "TRADE_SELL" // 卖出成交
+    FEE        TransactionType = "FEE"        // 手续费
+    FREEZE     TransactionType = "FREEZE"     // 冻结
+    UNFREEZE   TransactionType = "UNFREEZE"   // 解冻
+)
+
+// 流水记录
+type Transaction struct {
+    ID            string
+    UserID        string
+    AccountType   AccountType
+    Currency      string
+    Type          TransactionType
+    Amount        float64         // 变动金额（正数为增加，负数为减少）
+    BalanceBefore float64         // 变动前余额
+    BalanceAfter  float64         // 变动后余额
+    RefID         string          // 关联ID（订单ID、交易ID等）
+    Timestamp     time.Time
+    Remark        string
+}
+
+// 对账逻辑
+type ReconciliationService struct {
+    db *sql.DB
+}
+
+func (s *ReconciliationService) ReconcileAccount(
+    userID, currency string,
+) error {
+    // 1. 获取当前账户余额
+    var available, frozen float64
+    err := s.db.QueryRow(`
+        SELECT available, frozen 
+        FROM accounts 
+        WHERE user_id = ? AND currency = ?
+    `, userID, currency).Scan(&available, &frozen)
+    
+    if err != nil {
+        return err
+    }
+    
+    currentTotal := available + frozen
+    
+    // 2. 从流水表计算余额
+    var calculatedBalance float64
+    err = s.db.QueryRow(`
+        SELECT COALESCE(SUM(amount), 0)
+        FROM transactions 
+        WHERE user_id = ? AND currency = ?
+    `, userID, currency).Scan(&calculatedBalance)
+    
+    if err != nil {
+        return err
+    }
+    
+    // 3. 对比差异
+    diff := currentTotal - calculatedBalance
+    if math.Abs(diff) > 0.00000001 { // 浮点数比较
+        return fmt.Errorf(
+            "余额不一致: 账户=%.8f, 流水=%.8f, 差异=%.8f",
+            currentTotal, calculatedBalance, diff,
+        )
+    }
+    
+    return nil
+}
+
+// 定时对账任务
+func (s *ReconciliationService) DailyReconciliation() {
+    ticker := time.NewTicker(24 * time.Hour)
+    defer ticker.Stop()
+    
+    for range ticker.C {
+        // 获取所有活跃用户
+        rows, _ := s.db.Query(`
+            SELECT DISTINCT user_id, currency 
+            FROM accounts 
+            WHERE updated_at > DATE_SUB(NOW(), INTERVAL 1 DAY)
+        `)
+        defer rows.Close()
+        
+        for rows.Next() {
+            var userID, currency string
+            rows.Scan(&userID, &currency)
+            
+            if err := s.ReconcileAccount(userID, currency); err != nil {
+                // 发送告警
+                log.Printf("对账失败: %s - %s: %v", userID, currency, err)
+                // 可以发邮件、钉钉通知等
+            }
+        }
+    }
+}</code></pre>
+
+                    <h4>SQL 表设计：</h4>
+                    <pre><code class="language-sql">-- 流水表
+CREATE TABLE transactions (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(32) NOT NULL,
+    currency VARCHAR(10) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    amount DECIMAL(30, 8) NOT NULL,
+    balance_before DECIMAL(30, 8) NOT NULL,
+    balance_after DECIMAL(30, 8) NOT NULL,
+    ref_id VARCHAR(64),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    remark VARCHAR(255),
+    INDEX idx_user_currency_time(user_id, currency, created_at),
+    INDEX idx_ref_id(ref_id)
+) PARTITION BY RANGE(TO_DAYS(created_at));</code></pre>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ 对账要点</strong>
+                        <ul>
+                            <li><strong>T+0 对账</strong>：实时检查每笔交易后余额</li>
+                            <li><strong>T+1 对账</strong>：每日全量对账</li>
+                            <li><strong>差异处理</strong>：发现不一致立即告警，人工介入</li>
+                            <li><strong>流水不可删除</strong>：只能标记作废，保证审计完整性</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 第3部分：高性能系统 -->
+            <section class="section" id="section3">
+                <h2>3. 高性能系统设计</h2>
+                
+                <div id="rate-limiter">
+                    <h3>3.1 限流器实现 <span class="tag tag-important">重要</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        实现一个支持 QPS 限制的中间件，有哪些算法？
+                    </div>
+
+                    <h4>三种算法对比：</h4>
+                    <table>
+                        <tr>
+                            <th>算法</th>
+                            <th>优点</th>
+                            <th>缺点</th>
+                            <th>适用场景</th>
+                        </tr>
+                        <tr>
+                            <td>固定窗口</td>
+                            <td>简单易懂</td>
+                            <td>边界突刺问题</td>
+                            <td>粗略限流</td>
+                        </tr>
+                        <tr>
+                            <td>滑动窗口</td>
+                            <td>更精确平滑</td>
+                            <td>内存占用高</td>
+                            <td>严格限流</td>
+                        </tr>
+                        <tr>
+                            <td>令牌桶</td>
+                            <td>支持突发流量</td>
+                            <td>稍复杂</td>
+                            <td>生产推荐⭐</td>
+                        </tr>
+                    </table>
+
+                    <h4>完整实现：</h4>
+                    <div class="code-header">
+                        <span>rate_limiter.go - 三种算法完整实现</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "fmt"
+    "net/http"
+    "sync"
+    "time"
+)
+
+// ============ 算法1：固定窗口计数器 ============
+type FixedWindowLimiter struct {
+    limit     int
+    window    time.Duration
+    counter   int
+    lastReset time.Time
+    mu        sync.Mutex
+}
+
+func NewFixedWindowLimiter(limit int, window time.Duration) *FixedWindowLimiter {
+    return &FixedWindowLimiter{
+        limit:     limit,
+        window:    window,
+        counter:   0,
+        lastReset: time.Now(),
+    }
+}
+
+func (l *FixedWindowLimiter) Allow() bool {
+    l.mu.Lock()
+    defer l.mu.Unlock()
+    
+    now := time.Now()
+    
+    // 窗口重置
+    if now.Sub(l.lastReset) >= l.window {
+        l.counter = 0
+        l.lastReset = now
+    }
+    
+    if l.counter < l.limit {
+        l.counter++
+        return true
+    }
+    
+    return false
+}
+
+// ============ 算法2：滑动窗口 ============
+type SlidingWindowLimiter struct {
+    limit    int
+    window   time.Duration
+    requests []time.Time
+    mu       sync.Mutex
+}
+
+func NewSlidingWindowLimiter(limit int, window time.Duration) *SlidingWindowLimiter {
+    return &SlidingWindowLimiter{
+        limit:    limit,
+        window:   window,
+        requests: []time.Time{},
+    }
+}
+
+func (l *SlidingWindowLimiter) Allow() bool {
+    l.mu.Lock()
+    defer l.mu.Unlock()
+    
+    now := time.Now()
+    windowStart := now.Add(-l.window)
+    
+    // 移除过期请求
+    validRequests := []time.Time{}
+    for _, t := range l.requests {
+        if t.After(windowStart) {
+            validRequests = append(validRequests, t)
+        }
+    }
+    l.requests = validRequests
+    
+    // 检查限制
+    if len(l.requests) < l.limit {
+        l.requests = append(l.requests, now)
+        return true
+    }
+    
+    return false
+}
+
+// ============ 算法3：令牌桶（推荐）============
+type TokenBucketLimiter struct {
+    capacity   int           // 桶容量
+    tokens     int           // 当前令牌数
+    rate       time.Duration // 添加令牌的速率
+    lastRefill time.Time
+    mu         sync.Mutex
+}
+
+func NewTokenBucketLimiter(capacity int, rate time.Duration) *TokenBucketLimiter {
+    return &TokenBucketLimiter{
+        capacity:   capacity,
+        tokens:     capacity,
+        rate:       rate,
+        lastRefill: time.Now(),
+    }
+}
+
+func (l *TokenBucketLimiter) Allow() bool {
+    l.mu.Lock()
+    defer l.mu.Unlock()
+    
+    // 补充令牌
+    now := time.Now()
+    elapsed := now.Sub(l.lastRefill)
+    tokensToAdd := int(elapsed / l.rate)
+    
+    if tokensToAdd > 0 {
+        l.tokens = min(l.tokens+tokensToAdd, l.capacity)
+        l.lastRefill = now
+    }
+    
+    // 消费令牌
+    if l.tokens > 0 {
+        l.tokens--
+        return true
+    }
+    
+    return false
+}
+
+func min(a, b int) int {
+    if a < b {
+        return a
+    }
+    return b
+}
+
+// ============ HTTP 中间件示例 ============
+func RateLimitMiddleware(limiter *TokenBucketLimiter) func(http.HandlerFunc) http.HandlerFunc {
+    return func(next http.HandlerFunc) http.HandlerFunc {
+        return func(w http.ResponseWriter, r *http.Request) {
+            if !limiter.Allow() {
+                http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
+                return
+            }
+            next(w, r)
+        }
+    }
+}
+
+// ============ 性能测试 ============
+func TestRateLimiters() {
+    fmt.Println("=== 固定窗口测试 ===")
+    fixed := NewFixedWindowLimiter(10, time.Second)
+    testLimiter(fixed, "固定窗口")
+    
+    fmt.Println("\n=== 滑动窗口测试 ===")
+    sliding := NewSlidingWindowLimiter(10, time.Second)
+    testLimiter(sliding, "滑动窗口")
+    
+    fmt.Println("\n=== 令牌桶测试 ===")
+    token := NewTokenBucketLimiter(10, 100*time.Millisecond)
+    testLimiter(token, "令牌桶")
+}
+
+type Limiter interface {
+    Allow() bool
+}
+
+func testLimiter(limiter Limiter, name string) {
+    success := 0
+    failed := 0
+    
+    // 快速发送20个请求
+    for i := 0; i < 20; i++ {
+        if limiter.Allow() {
+            success++
+        } else {
+            failed++
+        }
+        time.Sleep(50 * time.Millisecond)
+    }
+    
+    fmt.Printf("%s: 成功=%d, 失败=%d\n", name, success, failed)
+}
+
+// ============ 交易所应用：API 限流 ============
+type ExchangeRateLimiter struct {
+    // 不同接口不同限制
+    orderLimiter   *TokenBucketLimiter // 下单：10次/秒
+    queryLimiter   *TokenBucketLimiter // 查询：100次/秒
+    tradeHistory   *TokenBucketLimiter // 历史：50次/分钟
+}
+
+func NewExchangeRateLimiter() *ExchangeRateLimiter {
+    return &ExchangeRateLimiter{
+        orderLimiter:  NewTokenBucketLimiter(10, 100*time.Millisecond),
+        queryLimiter:  NewTokenBucketLimiter(100, 10*time.Millisecond),
+        tradeHistory:  NewTokenBucketLimiter(50, time.Minute/50),
+    }
+}
+
+func (e *ExchangeRateLimiter) AllowOrder() bool {
+    return e.orderLimiter.Allow()
+}
+
+func (e *ExchangeRateLimiter) AllowQuery() bool {
+    return e.queryLimiter.Allow()
+}
+
+func (e *ExchangeRateLimiter) AllowTradeHistory() bool {
+    return e.tradeHistory.Allow()
+}
+
+func main() {
+    TestRateLimiters()
+    
+    // 交易所限流示例
+    fmt.Println("\n=== 交易所 API 限流 ===")
+    exchLimiter := NewExchangeRateLimiter()
+    
+    // 模拟大量下单请求
+    orderSuccess := 0
+    for i := 0; i < 20; i++ {
+        if exchLimiter.AllowOrder() {
+            orderSuccess++
+        }
+    }
+    fmt.Printf("下单请求：成功=%d/20\n", orderSuccess)
+}</code></pre>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ 边界问题：固定窗口的缺陷</strong>
+                        <p>假设限制 100次/分钟：</p>
+                        <ul>
+                            <li>第1分钟第59秒：发送100次 ✅</li>
+                            <li>第2分钟第1秒：又发送100次 ✅</li>
+                            <li>结果：2秒内发送了200次，超出预期！</li>
+                        </ul>
+                        <p>解决方案：使用滑动窗口或令牌桶</p>
+                    </div>
+
+                    <div class="tip-box success">
+                        <strong>✅ 生产环境推荐：令牌桶</strong>
+                        <ul>
+                            <li>支持突发流量（桶满时可瞬间处理 capacity 个请求）</li>
+                            <li>平滑限流（按固定速率补充令牌）</li>
+                            <li>适合绝大多数场景</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="snowflake">
+                    <h3>3.2 分布式ID生成（雪花算法）<span class="tag tag-important">重要</span></h3>
+                    
+                    <h4>ID结构（64位）：</h4>
+                    <pre>1位符号位 | 41位时间戳 | 10位机器ID | 12位序列号</pre>
+
+                    <div class="tip-box success">
+                        <strong>✅ 优势</strong>
+                        <ul>
+                            <li>趋势递增（按时间排序）</li>
+                            <li>高性能（无需网络调用）</li>
+                            <li>全局唯一</li>
+                        </ul>
+                    </div>
+
+                    <div class="code-header">
+                        <span>snowflake.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">type SnowflakeIDGenerator struct {
+    mu            sync.Mutex
+    epoch         int64 // 起始时间戳
+    machineID     int64 // 机器ID（0-1023）
+    sequence      int64 // 序列号（0-4095）
+    lastTimestamp int64
+}
+
+func (g *SnowflakeIDGenerator) NextID() (int64, error) {
+    g.mu.Lock()
+    defer g.mu.Unlock()
+    
+    timestamp := time.Now().UnixNano() / 1e6
+    
+    if timestamp < g.lastTimestamp {
+        return 0, errors.New("时钟回拨")
+    }
+    
+    if timestamp == g.lastTimestamp {
+        // 同一毫秒，序列号+1
+        g.sequence = (g.sequence + 1) & maxSequence
+        if g.sequence == 0 {
+            // 序列号溢出，等待下一毫秒
+            for timestamp <= g.lastTimestamp {
+                timestamp = time.Now().UnixNano() / 1e6
+            }
+        }
+    } else {
+        g.sequence = 0
+    }
+    
+    g.lastTimestamp = timestamp
+    
+    // 组合ID
+    id := ((timestamp - g.epoch) << timestampShift) |
+          (g.machineID << machineIDShift) |
+          g.sequence
+    
+    return id, nil
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- 第4部分：区块链技术 -->
+            <section class="section" id="section4">
+                <h2>4. 区块链技术实战</h2>
+                
+                <div id="wallet">
+                    <h3>4.1 以太坊钱包地址生成 <span class="tag tag-important">重要</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        如何生成以太坊地址？请解释整个流程
+                    </div>
+
+                    <h4>生成流程：</h4>
+                    <ol>
+                        <li>生成 ECDSA 私钥（256位随机数）</li>
+                        <li>从私钥计算公钥（椭圆曲线算法）</li>
+                        <li>对公钥进行 Keccak256 哈希</li>
+                        <li>取哈希结果的后 20 字节作为地址</li>
+                        <li>添加 "0x" 前缀，得到以太坊地址</li>
+                    </ol>
+
+                    <div class="code-header">
+                        <span>eth_wallet.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "crypto/ecdsa"
+    "crypto/rand"
+    "encoding/hex"
+    "fmt"
+    
+    "github.com/ethereum/go-ethereum/crypto"
+)
+
+// 生成以太坊地址
+func GenerateEthereumAddress() (address, privateKey, publicKey string, err error) {
+    // 1. 生成 ECDSA 私钥
+    key, err := ecdsa.GenerateKey(crypto.S256(), rand.Reader)
+    if err != nil {
+        return "", "", "", err
+    }
+    
+    // 2. 从私钥导出公钥
+    publicKeyECDSA := key.Public().(*ecdsa.PublicKey)
+    publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
+    
+    // 3. 计算地址（公钥 Keccak256 的后 20 字节）
+    addressBytes := crypto.PubkeyToAddress(*publicKeyECDSA)
+    
+    // 4. 编码
+    privateKeyBytes := crypto.FromECDSA(key)
+    
+    return addressBytes.Hex(),
+           hex.EncodeToString(privateKeyBytes),
+           hex.EncodeToString(publicKeyBytes),
+           nil
+}
+
+// 从私钥恢复地址
+func GetAddressFromPrivateKey(privateKeyHex string) (string, error) {
+    privateKeyBytes, err := hex.DecodeString(privateKeyHex)
+    if err != nil {
+        return "", err
+    }
+    
+    key, err := crypto.ToECDSA(privateKeyBytes)
+    if err != nil {
+        return "", err
+    }
+    
+    publicKey := key.Public().(*ecdsa.PublicKey)
+    address := crypto.PubkeyToAddress(*publicKey)
+    
+    return address.Hex(), nil
+}
+
+// 地址池管理
+type AddressPool struct {
+    db          *sql.DB
+    mu          sync.Mutex
+    preGenCount int // 预生成地址数量
+}
+
+func NewAddressPool(db *sql.DB) *AddressPool {
+    return &AddressPool{
+        db:          db,
+        preGenCount: 1000, // 预生成1000个地址
+    }
+}
+
+// 初始化：预生成地址
+func (p *AddressPool) Initialize() error {
+    for i := 0; i < p.preGenCount; i++ {
+        address, privKey, _, err := GenerateEthereumAddress()
+        if err != nil {
+            return err
+        }
+        
+        // 加密私钥后存储
+        encryptedPrivKey := encrypt(privKey) // 实际需要加密
+        
+        _, err = p.db.Exec(`
+            INSERT INTO address_pool (address, private_key, currency, status)
+            VALUES (?, ?, 'ETH', 'available')
+        `, address, encryptedPrivKey)
+        
+        if err != nil {
+            return err
+        }
+    }
+    return nil
+}
+
+// 分配地址给用户
+func (p *AddressPool) AllocateAddress(userID, currency string) (string, error) {
+    p.mu.Lock()
+    defer p.mu.Unlock()
+    
+    tx, _ := p.db.Begin()
+    defer tx.Rollback()
+    
+    // 1. 从地址池获取一个可用地址
+    var address string
+    err := tx.QueryRow(`
+        SELECT address FROM address_pool 
+        WHERE currency = ? AND status = 'available' 
+        LIMIT 1 FOR UPDATE
+    `, currency).Scan(&address)
+    
+    if err != nil {
+        return "", errors.New("地址池已空")
+    }
+    
+    // 2. 更新状态为已分配
+    _, err = tx.Exec(`
+        UPDATE address_pool 
+        SET status = 'allocated', user_id = ?, allocated_at = NOW()
+        WHERE address = ?
+    `, userID, address)
+    
+    if err != nil {
+        return "", err
+    }
+    
+    // 3. 记录用户地址
+    _, err = tx.Exec(`
+        INSERT INTO user_addresses (user_id, currency, address, created_at)
+        VALUES (?, ?, ?, NOW())
+    `, userID, currency, address)
+    
+    tx.Commit()
+    
+    // 4. 检查地址池，低于阈值时补充
+    go p.checkAndRefill()
+    
+    return address, nil
+}
+
+// 检查并补充地址池
+func (p *AddressPool) checkAndRefill() {
+    var count int
+    p.db.QueryRow(`
+        SELECT COUNT(*) FROM address_pool 
+        WHERE status = 'available'
+    `).Scan(&count)
+    
+    if count < 100 { // 低于100个时补充
+        p.Initialize()
+    }
+}
+
+func main() {
+    // 生成地址示例
+    address, privKey, pubKey, err := GenerateEthereumAddress()
+    if err != nil {
+        fmt.Println("生成失败:", err)
+        return
+    }
+    
+    fmt.Println("地址:", address)
+    fmt.Println("私钥:", privKey)
+    fmt.Println("公钥:", pubKey)
+    
+    // 验证：从私钥恢复地址
+    recoveredAddr, _ := GetAddressFromPrivateKey(privKey)
+    fmt.Println("恢复的地址:", recoveredAddr)
+    fmt.Println("地址一致:", address == recoveredAddr)
+}</code></pre>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ 安全注意事项</strong>
+                        <ul>
+                            <li>私钥必须加密存储（AES-256）</li>
+                            <li>使用 HSM（硬件安全模块）保护热钱包私钥</li>
+                            <li>冷钱包私钥离线保管</li>
+                            <li>定期审计地址池</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div id="deposit-watch">
+                    <h3>4.2 监听链上充值 <span class="tag tag-required">必考</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        如何实现充值监听？需要注意哪些问题？
+                    </div>
+
+                    <h4>两种监听方式：</h4>
+                    <table>
+                        <tr>
+                            <th>方式</th>
+                            <th>原理</th>
+                            <th>优点</th>
+                            <th>缺点</th>
+                        </tr>
+                        <tr>
+                            <td>订阅新区块</td>
+                            <td>WebSocket 订阅</td>
+                            <td>实时性好</td>
+                            <td>依赖连接稳定</td>
+                        </tr>
+                        <tr>
+                            <td>轮询区块</td>
+                            <td>定时查询最新区块</td>
+                            <td>稳定可靠</td>
+                            <td>有延迟</td>
+                        </tr>
+                    </table>
+
+                    <div class="code-header">
+                        <span>deposit_watcher.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "math/big"
+    
+    "github.com/ethereum/go-ethereum"
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/ethereum/go-ethereum/core/types"
+    "github.com/ethereum/go-ethereum/ethclient"
+)
+
+// 充值监听器
+type DepositWatcher struct {
+    client         *ethclient.Client
+    watchAddresses map[common.Address]string // 地址 -> 用户ID
+    db             *sql.DB
+    confirmations  int // 确认数
+}
+
+func NewDepositWatcher(rpcURL string, db *sql.DB) (*DepositWatcher, error) {
+    client, err := ethclient.Dial(rpcURL)
+    if err != nil {
+        return nil, err
+    }
+    
+    watcher := &DepositWatcher{
+        client:         client,
+        watchAddresses: make(map[common.Address]string),
+        db:             db,
+        confirmations:  12, // 等待12个区块确认
+    }
+    
+    // 从数据库加载监听地址
+    watcher.loadWatchAddresses()
+    
+    return watcher, nil
+}
+
+// 加载监听地址
+func (w *DepositWatcher) loadWatchAddresses() error {
+    rows, err := w.db.Query(`
+        SELECT address, user_id 
+        FROM user_addresses 
+        WHERE currency = 'ETH'
+    `)
+    if err != nil {
+        return err
+    }
+    defer rows.Close()
+    
+    for rows.Next() {
+        var address, userID string
+        rows.Scan(&address, &userID)
+        w.watchAddresses[common.HexToAddress(address)] = userID
+    }
+    
+    return nil
+}
+
+// 方式1：订阅新区块（推荐）
+func (w *DepositWatcher) WatchBlocksSubscribe(ctx context.Context) error {
+    headers := make(chan *types.Header)
+    
+    sub, err := w.client.SubscribeNewHead(ctx, headers)
+    if err != nil {
+        return err
+    }
+    defer sub.Unsubscribe()
+    
+    fmt.Println("开始监听新区块...")
+    
+    for {
+        select {
+        case err := <-sub.Err():
+            log.Printf("订阅错误: %v", err)
+            return err
+            
+        case header := <-headers:
+            // 获取区块详情
+            block, err := w.client.BlockByNumber(ctx, header.Number)
+            if err != nil {
+                log.Printf("获取区块失败: %v", err)
+                continue
+            }
+            
+            // 检查区块中的交易
+            w.checkBlockTransactions(ctx, block)
+        }
+    }
+}
+
+// 方式2：轮询区块（更稳定）
+func (w *DepositWatcher) WatchBlocksPoll(ctx context.Context) error {
+    // 获取起始区块
+    lastBlock, _ := w.getLastProcessedBlock()
+    
+    ticker := time.NewTicker(3 * time.Second) // 每3秒检查一次
+    defer ticker.Stop()
+    
+    for {
+        select {
+        case <-ctx.Done():
+            return ctx.Err()
+            
+        case <-ticker.C:
+            // 获取最新区块号
+            latestBlock, err := w.client.BlockNumber(ctx)
+            if err != nil {
+                log.Printf("获取最新区块失败: %v", err)
+                continue
+            }
+            
+            // 处理新区块
+            for blockNum := lastBlock + 1; blockNum <= latestBlock; blockNum++ {
+                block, err := w.client.BlockByNumber(ctx, big.NewInt(int64(blockNum)))
+                if err != nil {
+                    log.Printf("获取区块 %d 失败: %v", blockNum, err)
+                    continue
+                }
+                
+                w.checkBlockTransactions(ctx, block)
+                lastBlock = blockNum
+                w.saveLastProcessedBlock(blockNum)
+            }
+        }
+    }
+}
+
+// 检查区块中的交易
+func (w *DepositWatcher) checkBlockTransactions(ctx context.Context, block *types.Block) {
+    for _, tx := range block.Transactions() {
+        // 检查接收地址是否在监听列表中
+        if tx.To() == nil {
+            continue // 合约创建交易
+        }
+        
+        toAddress := *tx.To()
+        userID, exists := w.watchAddresses[toAddress]
+        if !exists {
+            continue
+        }
+        
+        // 检查交易状态
+        receipt, err := w.client.TransactionReceipt(ctx, tx.Hash())
+        if err != nil {
+            log.Printf("获取交易收据失败: %v", err)
+            continue
+        }
+        
+        if receipt.Status != 1 {
+            continue // 交易失败
+        }
+        
+        // 检查确认数
+        currentBlock, _ := w.client.BlockNumber(ctx)
+        confirmations := currentBlock - block.Number().Uint64()
+        
+        if confirmations >= uint64(w.confirmations) {
+            // 处理充值
+            w.handleDeposit(userID, tx, block.Number().Uint64())
+        } else {
+            // 记录待确认的充值
+            w.recordPendingDeposit(userID, tx, block.Number().Uint64())
+        }
+    }
+}
+
+// 处理充值
+func (w *DepositWatcher) handleDeposit(userID string, tx *types.Transaction, blockNum uint64) {
+    amount := new(big.Float).SetInt(tx.Value())
+    amount = amount.Quo(amount, big.NewFloat(1e18)) // Wei 转 ETH
+    
+    amountFloat, _ := amount.Float64()
+    
+    // 检查是否已处理
+    var count int
+    w.db.QueryRow(`
+        SELECT COUNT(*) FROM deposits 
+        WHERE tx_hash = ?
+    `, tx.Hash().Hex()).Scan(&count)
+    
+    if count > 0 {
+        return // 已处理
+    }
+    
+    // 开启事务
+    tx2, _ := w.db.Begin()
+    defer tx2.Rollback()
+    
+    // 1. 记录充值
+    _, err := tx2.Exec(`
+        INSERT INTO deposits 
+        (user_id, currency, amount, tx_hash, block_number, 
+         confirmations, status, created_at)
+        VALUES (?, 'ETH', ?, ?, ?, ?, 'confirmed', NOW())
+    `, userID, amountFloat, tx.Hash().Hex(), blockNum, w.confirmations)
+    
+    if err != nil {
+        log.Printf("记录充值失败: %v", err)
+        return
+    }
+    
+    // 2. 增加用户余额
+    _, err = tx2.Exec(`
+        UPDATE accounts 
+        SET available = available + ?
+        WHERE user_id = ? AND currency = 'ETH'
+    `, amountFloat, userID)
+    
+    if err != nil {
+        log.Printf("增加余额失败: %v", err)
+        return
+    }
+    
+    // 3. 记录流水
+    _, err = tx2.Exec(`
+        INSERT INTO transactions 
+        (user_id, currency, type, amount, ref_id, created_at)
+        VALUES (?, 'ETH', 'DEPOSIT', ?, ?, NOW())
+    `, userID, amountFloat, tx.Hash().Hex())
+    
+    tx2.Commit()
+    
+    fmt.Printf("充值到账：用户=%s, 金额=%.8f ETH, 交易=%s\n",
+        userID, amountFloat, tx.Hash().Hex())
+}
+
+// 记录待确认的充值
+func (w *DepositWatcher) recordPendingDeposit(userID string, tx *types.Transaction, blockNum uint64) {
+    // 类似 handleDeposit，但 status = 'pending'
+    // 后台任务会定期检查 pending 的充值是否已达到确认数
+}
+
+func main() {
+    db, _ := sql.Open("mysql", "user:pass@tcp(localhost:3306)/exchange")
+    
+    watcher, err := NewDepositWatcher("https://mainnet.infura.io/v3/YOUR_KEY", db)
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    ctx := context.Background()
+    
+    // 使用轮询方式（更稳定）
+    if err := watcher.WatchBlocksPoll(ctx); err != nil {
+        log.Fatal(err)
+    }
+}</code></pre>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ 重要注意事项</strong>
+                        <ul>
+                            <li><strong>重复处理</strong>：必须用交易哈希去重</li>
+                            <li><strong>确认数</strong>：ETH 建议 12 个区块，BTC 建议 6 个</li>
+                            <li><strong>链重组</strong>：监控 reorg，回滚已处理的充值</li>
+                            <li><strong>失败重试</strong>：网络异常时自动重试</li>
+                            <li><strong>告警机制</strong>：监听服务异常立即告警</li>
+                        </ul>
+                    </div>
+
+                    <h4>数据库表设计：</h4>
+                    <pre><code class="language-sql">-- 充值记录表
+CREATE TABLE deposits (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id VARCHAR(32) NOT NULL,
+    currency VARCHAR(10) NOT NULL,
+    amount DECIMAL(30, 8) NOT NULL,
+    tx_hash VARCHAR(66) NOT NULL,
+    block_number BIGINT NOT NULL,
+    confirmations INT DEFAULT 0,
+    status ENUM('pending', 'confirmed', 'failed') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    confirmed_at TIMESTAMP NULL,
+    UNIQUE KEY uk_tx_hash(tx_hash),
+    INDEX idx_user_status(user_id, status),
+    INDEX idx_block(block_number)
+);</code></pre>
+                </div>
+            </section>
+
+            <!-- 第5部分：系统设计 -->
+            <section class="section" id="section5">
+                <h2>5. 系统设计大题</h2>
+                
+                <div id="trading-system">
+                    <h3>5.1 设计一个现货交易系统 <span class="tag tag-required">必考</span></h3>
+                    
+                    <h4>架构设计：</h4>
+                    <div class="architecture-diagram">
+┌─────────────┐
+│   用户端     │
+│ Web/App/API │
+└──────┬──────┘
+       │
+┌──────▼───────────────────────────────────┐
+│         API Gateway (限流/鉴权)           │
+└──────┬───────────────────────────────────┘
+       │
+       ├─────► 【交易服务】订单管理、撮合引擎
+       ├─────► 【资产服务】余额管理、充提
+       ├─────► 【行情服务】K线、深度、实时价格
+       ├─────► 【用户服务】注册、KYC、API Key
+       └─────► 【风控服务】反洗钱、异常检测
+              │
+       ┌──────▼──────┐
+       │   消息队列   │
+       │   (Kafka)    │
+       └──────┬──────┘
+              │
+       ┌──────▼──────┐
+       │   数据库     │
+       │  MySQL 集群  │
+       │ + Redis 缓存 │
+       └──────────────┘</div>
+
+                    <h4>数据库设计：</h4>
+                    <pre><code class="language-sql">-- 订单表（分库分表）
+CREATE TABLE orders (
+    id BIGINT PRIMARY KEY,
+    user_id VARCHAR(32) NOT NULL,
+    symbol VARCHAR(20) NOT NULL,
+    side ENUM('BUY', 'SELL'),
+    type ENUM('LIMIT', 'MARKET'),
+    price DECIMAL(20, 8),
+    quantity DECIMAL(20, 8),
+    filled DECIMAL(20, 8),
+    status ENUM('pending', 'filled', 'partial', 'cancelled'),
+    created_at TIMESTAMP,
+    updated_at TIMESTAMP,
+    INDEX idx_user_symbol(user_id, symbol)
+) PARTITION BY RANGE(YEAR(created_at));
+
+-- 账户表
+CREATE TABLE accounts (
+    user_id VARCHAR(32) PRIMARY KEY,
+    currency VARCHAR(10) NOT NULL,
+    available DECIMAL(30, 8) DEFAULT 0,
+    frozen DECIMAL(30, 8) DEFAULT 0,
+    updated_at TIMESTAMP,
+    UNIQUE KEY uk_user_currency(user_id, currency)
+);</code></pre>
+
+                    <h4>技术选型：</h4>
+                    <table>
+                        <tr>
+                            <th>组件</th>
+                            <th>技术</th>
+                            <th>用途</th>
+                        </tr>
+                        <tr>
+                            <td>API Gateway</td>
+                            <td>Kong / Nginx</td>
+                            <td>限流、鉴权、路由</td>
+                        </tr>
+                        <tr>
+                            <td>撮合引擎</td>
+                            <td>Go + 内存</td>
+                            <td>高性能撮合</td>
+                        </tr>
+                        <tr>
+                            <td>数据库</td>
+                            <td>MySQL</td>
+                            <td>订单、账户持久化</td>
+                        </tr>
+                        <tr>
+                            <td>缓存</td>
+                            <td>Redis</td>
+                            <td>订单簿、用户会话</td>
+                        </tr>
+                        <tr>
+                            <td>消息队列</td>
+                            <td>Kafka</td>
+                            <td>成交推送、异步处理</td>
+                        </tr>
+                        <tr>
+                            <td>WebSocket</td>
+                            <td>Gorilla</td>
+                            <td>实时行情推送</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div id="deposit-withdraw">
+                    <h3>5.2 设计充值提现系统 <span class="tag tag-required">必考</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        设计一个安全可靠的充提系统，需要考虑哪些问题？
+                    </div>
+
+                    <h4>系统架构：</h4>
+                    <div class="architecture-diagram">
+┌──────────────────────────────────────────┐
+│           充值提现系统架构                │
+└──────────────────────────────────────────┘
+
+【充值流程】
+用户转账 → 链上监听 → 等待确认 → 入账
+    │           │          │          │
+    │           │          │          └─→ 增加余额
+    │           │          └─→ 12个区块
+    │           └─→ DepositWatcher
+    └─→ 发送到充值地址
+
+【提现流程】
+用户申请 → 风控检查 → 冻结余额 → 构建交易
+    │           │          │          │
+    │           │          │          └─→ 签名广播
+    │           │          └─→ 扣除可用
+    │           └─→ 限额/白名单/异常检测
+    └─→ 提交提现请求
+
+【钱包架构】
+热钱包（5%资产）→ 处理日常提现
+    └─→ 多重签名（2/3）
+    
+冷钱包（95%资产）→ 离线保管
+    └─→ 人工转账补充热钱包</div>
+
+                    <h4>完整实现：</h4>
+                    <div class="code-header">
+                        <span>withdraw_service.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "context"
+    "errors"
+    "math/big"
+    
+    "github.com/ethereum/go-ethereum/core/types"
+    "github.com/ethereum/go-ethereum/ethclient"
+)
+
+// 提现服务
+type WithdrawService struct {
+    client       *ethclient.Client
+    db           *sql.DB
+    assetService *AssetService
+    riskService  *RiskService
+    signer       *TransactionSigner
+}
+
+// 提现请求
+type WithdrawRequest struct {
+    UserID    string
+    Currency  string
+    ToAddress string
+    Amount    float64
+    IPAddress string
+    UserAgent string
+}
+
+// 1. 用户申请提现
+func (s *WithdrawService) RequestWithdraw(req *WithdrawRequest) (string, error) {
+    // 1. 基础验证
+    if err := s.validateRequest(req); err != nil {
+        return "", err
+    }
+    
+    // 2. 风控检查
+    if err := s.riskService.CheckWithdraw(req); err != nil {
+        return "", fmt.Errorf("风控拒绝: %w", err)
+    }
+    
+    // 3. 检查余额
+    balance := s.assetService.GetBalance(req.UserID, req.Currency)
+    if balance.Available < req.Amount {
+        return "", errors.New("余额不足")
+    }
+    
+    // 4. 冻结余额
+    if err := s.assetService.Freeze(req.UserID, req.Currency, req.Amount); err != nil {
+        return "", err
+    }
+    
+    // 5. 创建提现记录
+    withdrawID, err := s.createWithdrawRecord(req)
+    if err != nil {
+        // 回滚冻结
+        s.assetService.Unfreeze(req.UserID, req.Currency, req.Amount)
+        return "", err
+    }
+    
+    // 6. 异步处理提现（避免阻塞）
+    go s.processWithdraw(withdrawID)
+    
+    return withdrawID, nil
+}
+
+// 创建提现记录
+func (s *WithdrawService) createWithdrawRecord(req *WithdrawRequest) (string, error) {
+    withdrawID := generateWithdrawID()
+    
+    _, err := s.db.Exec(`
+        INSERT INTO withdraws 
+        (id, user_id, currency, to_address, amount, fee, 
+         status, ip_address, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, NOW())
+    `, withdrawID, req.UserID, req.Currency, req.ToAddress, 
+       req.Amount, calculateFee(req.Amount), req.IPAddress)
+    
+    return withdrawID, err
+}
+
+// 2. 处理提现（后台任务）
+func (s *WithdrawService) processWithdraw(withdrawID string) {
+    // 获取提现信息
+    withdraw, err := s.getWithdraw(withdrawID)
+    if err != nil {
+        log.Printf("获取提现失败: %v", err)
+        return
+    }
+    
+    // 大额提现需要人工审核
+    if withdraw.Amount > 10000 { // 假设超过1万需要审核
+        s.updateStatus(withdrawID, "pending_approval")
+        s.notifyAdmin(withdraw)
+        return
+    }
+    
+    // 小额提现自动处理
+    s.executeWithdraw(withdraw)
+}
+
+// 3. 执行提现（构建和广播交易）
+func (s *WithdrawService) executeWithdraw(withdraw *Withdraw) error {
+    ctx := context.Background()
+    
+    // 1. 获取热钱包地址
+    hotWallet := s.getHotWallet(withdraw.Currency)
+    
+    // 2. 构建交易
+    tx, err := s.buildTransaction(ctx, withdraw, hotWallet)
+    if err != nil {
+        s.markWithdrawFailed(withdraw.ID, err.Error())
+        return err
+    }
+    
+    // 3. 签名交易（多重签名）
+    signedTx, err := s.signer.SignWithMultiSig(tx, hotWallet)
+    if err != nil {
+        s.markWithdrawFailed(withdraw.ID, err.Error())
+        return err
+    }
+    
+    // 4. 广播交易
+    err = s.client.SendTransaction(ctx, signedTx)
+    if err != nil {
+        s.markWithdrawFailed(withdraw.ID, err.Error())
+        return err
+    }
+    
+    // 5. 更新状态
+    s.updateWithdraw(withdraw.ID, signedTx.Hash().Hex(), "processing")
+    
+    // 6. 监听交易确认
+    go s.monitorWithdrawConfirmation(withdraw.ID, signedTx.Hash().Hex())
+    
+    return nil
+}
+
+// 构建交易
+func (s *WithdrawService) buildTransaction(
+    ctx context.Context,
+    withdraw *Withdraw,
+    hotWallet *Wallet,
+) (*types.Transaction, error) {
+    
+    // 获取 nonce
+    nonce, err := s.client.PendingNonceAt(ctx, hotWallet.Address)
+    if err != nil {
+        return nil, err
+    }
+    
+    // 获取 gas price
+    gasPrice, err := s.client.SuggestGasPrice(ctx)
+    if err != nil {
+        return nil, err
+    }
+    
+    // 计算金额（Wei）
+    value := new(big.Int)
+    value.SetString(fmt.Sprintf("%.0f", withdraw.Amount*1e18), 10)
+    
+    // 估算 gas limit
+    gasLimit := uint64(21000) // ETH 转账固定 21000
+    
+    // 构建交易
+    toAddress := common.HexToAddress(withdraw.ToAddress)
+    tx := types.NewTransaction(
+        nonce,
+        toAddress,
+        value,
+        gasLimit,
+        gasPrice,
+        nil,
+    )
+    
+    return tx, nil
+}
+
+// 4. 监听交易确认
+func (s *WithdrawService) monitorWithdrawConfirmation(withdrawID, txHash string) {
+    ctx := context.Background()
+    ticker := time.NewTicker(10 * time.Second)
+    defer ticker.Stop()
+    
+    for range ticker.C {
+        receipt, err := s.client.TransactionReceipt(ctx, common.HexToHash(txHash))
+        if err != nil {
+            continue // 交易还未上链
+        }
+        
+        // 检查交易状态
+        if receipt.Status == 0 {
+            // 交易失败
+            s.updateStatus(withdrawID, "failed")
+            s.handleFailedWithdraw(withdrawID)
+            return
+        }
+        
+        // 检查确认数
+        currentBlock, _ := s.client.BlockNumber(ctx)
+        confirmations := currentBlock - receipt.BlockNumber.Uint64()
+        
+        if confirmations >= 12 {
+            // 交易成功
+            s.completeWithdraw(withdrawID)
+            return
+        }
+    }
+}
+
+// 5. 完成提现
+func (s *WithdrawService) completeWithdraw(withdrawID string) error {
+    withdraw, _ := s.getWithdraw(withdrawID)
+    
+    tx, _ := s.db.Begin()
+    defer tx.Rollback()
+    
+    // 1. 扣除冻结余额
+    _, err := tx.Exec(`
+        UPDATE accounts 
+        SET frozen = frozen - ?
+        WHERE user_id = ? AND currency = ?
+    `, withdraw.Amount, withdraw.UserID, withdraw.Currency)
+    
+    if err != nil {
+        return err
+    }
+    
+    // 2. 更新提现状态
+    _, err = tx.Exec(`
+        UPDATE withdraws 
+        SET status = 'completed', completed_at = NOW()
+        WHERE id = ?
+    `, withdrawID)
+    
+    if err != nil {
+        return err
+    }
+    
+    // 3. 记录流水
+    _, err = tx.Exec(`
+        INSERT INTO transactions 
+        (user_id, currency, type, amount, ref_id, created_at)
+        VALUES (?, ?, 'WITHDRAW', ?, ?, NOW())
+    `, withdraw.UserID, withdraw.Currency, -withdraw.Amount, withdrawID)
+    
+    tx.Commit()
+    
+    log.Printf("提现完成：用户=%s, 金额=%.8f %s",
+        withdraw.UserID, withdraw.Amount, withdraw.Currency)
+    
+    return nil
+}
+
+// 处理失败的提现
+func (s *WithdrawService) handleFailedWithdraw(withdrawID string) {
+    withdraw, _ := s.getWithdraw(withdrawID)
+    
+    // 解冻余额
+    s.assetService.Unfreeze(withdraw.UserID, withdraw.Currency, withdraw.Amount)
+    
+    // 通知用户
+    s.notifyUser(withdraw.UserID, "提现失败，余额已退回")
+}
+
+// 风控服务
+type RiskService struct {
+    db *sql.DB
+}
+
+// 风控检查
+func (r *RiskService) CheckWithdraw(req *WithdrawRequest) error {
+    // 1. 检查地址白名单
+    if !r.isWhitelisted(req.UserID, req.ToAddress) {
+        return errors.New("地址未在白名单中")
+    }
+    
+    // 2. 检查单笔限额
+    if req.Amount > 100 { // 假设单笔限额100
+        return errors.New("超过单笔限额")
+    }
+    
+    // 3. 检查日累计限额
+    dailyTotal := r.getDailyWithdrawTotal(req.UserID, req.Currency)
+    if dailyTotal+req.Amount > 1000 { // 假设日限额1000
+        return errors.New("超过日累计限额")
+    }
+    
+    // 4. 检查异常行为
+    if r.isAbnormalBehavior(req) {
+        return errors.New("检测到异常行为")
+    }
+    
+    return nil
+}
+
+// 异常行为检测
+func (r *RiskService) isAbnormalBehavior(req *WithdrawRequest) bool {
+    // 1. IP 地址突变
+    lastIP := r.getLastLoginIP(req.UserID)
+    if lastIP != "" && lastIP != req.IPAddress {
+        // IP 变化，增加风险评分
+    }
+    
+    // 2. 短时间内多次提现
+    recentCount := r.getRecentWithdrawCount(req.UserID, 1*time.Hour)
+    if recentCount > 5 {
+        return true
+    }
+    
+    // 3. 提现到新地址
+    if !r.hasWithdrawnToAddress(req.UserID, req.ToAddress) {
+        // 第一次提现到这个地址，需要额外验证
+    }
+    
+    return false
+}</code></pre>
+
+                    <h4>安全措施：</h4>
+                    <table>
+                        <tr>
+                            <th>层面</th>
+                            <th>措施</th>
+                            <th>说明</th>
+                        </tr>
+                        <tr>
+                            <td>钱包</td>
+                            <td>热冷分离</td>
+                            <td>95%资产存冷钱包</td>
+                        </tr>
+                        <tr>
+                            <td>签名</td>
+                            <td>多重签名</td>
+                            <td>需要2/3密钥签名</td>
+                        </tr>
+                        <tr>
+                            <td>风控</td>
+                            <td>限额+白名单</td>
+                            <td>单笔/日累计限额</td>
+                        </tr>
+                        <tr>
+                            <td>审核</td>
+                            <td>人工复核</td>
+                            <td>大额提现人工审核</td>
+                        </tr>
+                        <tr>
+                            <td>监控</td>
+                            <td>实时告警</td>
+                            <td>异常立即通知</td>
+                        </tr>
+                    </table>
+
+                    <div class="tip-box warning">
+                        <strong>⚠️ 关键风险点</strong>
+                        <ul>
+                            <li><strong>私钥泄露</strong>：使用 HSM，定期轮换</li>
+                            <li><strong>重放攻击</strong>：交易哈希去重</li>
+                            <li><strong>内部作案</strong>：操作日志审计，多人审批</li>
+                            <li><strong>钓鱼攻击</strong>：地址白名单机制</li>
+                            <li><strong>热钱包被盗</strong>：限制热钱包余额，实时监控</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 第6部分：算法 -->
+            <section class="section" id="section6">
+                <h2>6. 算法与数据结构</h2>
+                
+                <div id="lru">
+                    <h3>6.1 LRU Cache <span class="tag tag-required">必考</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 核心思想</strong>
+                        哈希表 + 双向链表，实现 O(1) 的 Get 和 Put
+                    </div>
+
+                    <div class="code-header">
+                        <span>lru_cache.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">type LRUCache struct {
+    capacity int
+    cache    map[interface{}]*list.Element
+    list     *list.List
+}
+
+type entry struct {
+    key   interface{}
+    value interface{}
+}
+
+func (c *LRUCache) Get(key interface{}) (interface{}, bool) {
+    if elem, exists := c.cache[key]; exists {
+        // 移到链表头部（最近使用）
+        c.list.MoveToFront(elem)
+        return elem.Value.(*entry).value, true
+    }
+    return nil, false
+}
+
+func (c *LRUCache) Put(key, value interface{}) {
+    if elem, exists := c.cache[key]; exists {
+        c.list.MoveToFront(elem)
+        elem.Value.(*entry).value = value
+        return
+    }
+    
+    // 新增
+    elem := c.list.PushFront(&entry{key, value})
+    c.cache[key] = elem
+    
+    // 超过容量，删除最久未使用的
+    if c.list.Len() > c.capacity {
+        oldest := c.list.Back()
+        if oldest != nil {
+            c.list.Remove(oldest)
+            delete(c.cache, oldest.Value.(*entry).key)
+        }
+    }
+}</code></pre>
+
+                    <h4>交易所应用场景：</h4>
+                    <ul>
+                        <li>缓存用户的订单列表</li>
+                        <li>缓存热门交易对的订单簿</li>
+                        <li>缓存用户的账户信息</li>
+                    </ul>
+                </div>
+
+                <div id="consistent-hash">
+                    <h3>6.2 一致性Hash（分布式缓存）<span class="tag tag-important">重要</span></h3>
+                    
+                    <div class="tip-box info">
+                        <strong>💡 面试问题</strong>
+                        一致性Hash解决了什么问题？如何实现？
+                    </div>
+
+                    <h4>为什么需要一致性Hash？</h4>
+                    <p><strong>传统取模算法的问题：</strong></p>
+                    <ul>
+                        <li>节点数量变化时，大量数据需要迁移</li>
+                        <li>例如：3个节点扩容到4个，75%的数据要重新分配</li>
+                    </ul>
+
+                    <p><strong>一致性Hash的优势：</strong></p>
+                    <ul>
+                        <li>节点变化时，只影响相邻节点的数据</li>
+                        <li>数据迁移量大约是 1/N（N为节点数）</li>
+                        <li>虚拟节点保证数据分布均匀</li>
+                    </ul>
+
+                    <h4>完整实现：</h4>
+                    <div class="code-header">
+                        <span>consistent_hash.go</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                    </div>
+                    <pre><code class="language-go">package main
+
+import (
+    "crypto/md5"
+    "fmt"
+    "sort"
+    "strconv"
+)
+
+// 一致性Hash环
+type ConsistentHash struct {
+    hashRing   []int            // 排序后的hash值
+    hashMap    map[int]string   // hash -> 节点名
+    nodes      map[string]bool  // 节点集合
+    replicas   int              // 虚拟节点数
+}
+
+func NewConsistentHash(replicas int) *ConsistentHash {
+    return &ConsistentHash{
+        hashRing: []int{},
+        hashMap:  make(map[int]string),
+        nodes:    make(map[string]bool),
+        replicas: replicas,
+    }
+}
+
+// 添加节点
+func (ch *ConsistentHash) AddNode(node string) {
+    if ch.nodes[node] {
+        return
+    }
+    
+    ch.nodes[node] = true
+    
+    // 创建虚拟节点
+    for i := 0; i < ch.replicas; i++ {
+        virtualNode := fmt.Sprintf("%s#%d", node, i)
+        hash := ch.hash(virtualNode)
+        ch.hashRing = append(ch.hashRing, hash)
+        ch.hashMap[hash] = node
+    }
+    
+    // 保持排序
+    sort.Ints(ch.hashRing)
+}
+
+// 移除节点
+func (ch *ConsistentHash) RemoveNode(node string) {
+    if !ch.nodes[node] {
+        return
+    }
+    
+    delete(ch.nodes, node)
+    
+    // 移除虚拟节点
+    newRing := []int{}
+    for _, hash := range ch.hashRing {
+        if ch.hashMap[hash] != node {
+            newRing = append(newRing, hash)
+        } else {
+            delete(ch.hashMap, hash)
+        }
+    }
+    ch.hashRing = newRing
+}
+
+// 获取key对应的节点
+func (ch *ConsistentHash) GetNode(key string) string {
+    if len(ch.hashRing) == 0 {
+        return ""
+    }
+    
+    hash := ch.hash(key)
+    
+    // 二分查找第一个 >= hash 的节点
+    idx := sort.Search(len(ch.hashRing), func(i int) bool {
+        return ch.hashRing[i] >= hash
+    })
+    
+    // 如果没找到，说明超过了最大值，取第一个节点（环形）
+    if idx == len(ch.hashRing) {
+        idx = 0
+    }
+    
+    return ch.hashMap[ch.hashRing[idx]]
+}
+
+// Hash函数
+func (ch *ConsistentHash) hash(key string) int {
+    h := md5.Sum([]byte(key))
+    // 取前4字节作为hash值
+    return int(h[0])<<24 | int(h[1])<<16 | int(h[2])<<8 | int(h[3])
+}
+
+// 获取所有节点
+func (ch *ConsistentHash) GetNodes() []string {
+    nodes := []string{}
+    for node := range ch.nodes {
+        nodes = append(nodes, node)
+    }
+    return nodes
+}
+
+// 测试数据分布
+func TestConsistentHash() {
+    ch := NewConsistentHash(150) // 150个虚拟节点
+    
+    // 添加3个Redis节点
+    ch.AddNode("redis-1")
+    ch.AddNode("redis-2")
+    ch.AddNode("redis-3")
+    
+    // 测试10000个key的分布
+    distribution := make(map[string]int)
+    
+    for i := 0; i < 10000; i++ {
+        key := "orderbook:" + strconv.Itoa(i)
+        node := ch.GetNode(key)
+        distribution[node]++
+    }
+    
+    fmt.Println("=== 初始数据分布 ===")
+    for node, count := range distribution {
+        fmt.Printf("%s: %d (%.2f%%)\n", 
+            node, count, float64(count)/100)
+    }
+    
+    // 添加第4个节点
+    fmt.Println("\n添加节点 redis-4...")
+    ch.AddNode("redis-4")
+    
+    // 统计数据迁移
+    newDistribution := make(map[string]int)
+    moved := 0
+    
+    for i := 0; i < 10000; i++ {
+        key := "orderbook:" + strconv.Itoa(i)
+        newNode := ch.GetNode(key)
+        newDistribution[newNode]++
+        
+        // 统计迁移量
+        oldNode := ""
+        if i < 3333 {
+            oldNode = "redis-1"
+        } else if i < 6666 {
+            oldNode = "redis-2"
+        } else {
+            oldNode = "redis-3"
+        }
+        
+        if newNode != oldNode {
+            moved++
+        }
+    }
+    
+    fmt.Println("\n=== 新增节点后数据分布 ===")
+    for node, count := range newDistribution {
+        fmt.Printf("%s: %d (%.2f%%)\n", 
+            node, count, float64(count)/100)
+    }
+    
+    fmt.Printf("\n迁移数据量: %d (%.2f%%)\n", 
+        moved, float64(moved)/100)
+}
+
+// 交易所应用：分布式订单簿缓存
+type OrderBookCache struct {
+    ch     *ConsistentHash
+    redis  map[string]*RedisClient // 节点名 -> Redis客户端
+}
+
+func NewOrderBookCache(redisNodes []string) *OrderBookCache {
+    ch := NewConsistentHash(150)
+    redis := make(map[string]*RedisClient)
+    
+    for _, node := range redisNodes {
+        ch.AddNode(node)
+        redis[node] = NewRedisClient(node)
+    }
+    
+    return &OrderBookCache{
+        ch:    ch,
+        redis: redis,
+    }
+}
+
+// 获取订单簿
+func (c *OrderBookCache) GetOrderBook(symbol string) (*OrderBook, error) {
+    node := c.ch.GetNode(symbol)
+    client := c.redis[node]
+    
+    // 从对应的Redis节点获取
+    return client.Get("orderbook:" + symbol)
+}
+
+// 设置订单簿
+func (c *OrderBookCache) SetOrderBook(symbol string, orderbook *OrderBook) error {
+    node := c.ch.GetNode(symbol)
+    client := c.redis[node]
+    
+    return client.Set("orderbook:"+symbol, orderbook)
+}
+
+// 扩容：添加新Redis节点
+func (c *OrderBookCache) AddRedisNode(nodeName, nodeAddr string) {
+    // 1. 添加到Hash环
+    c.ch.AddNode(nodeName)
+    
+    // 2. 创建Redis客户端
+    c.redis[nodeName] = NewRedisClient(nodeAddr)
+    
+    // 3. 迁移数据（后台任务）
+    go c.migrateData(nodeName)
+}
+
+// 迁移数据
+func (c *OrderBookCache) migrateData(newNode string) {
+    // 遍历所有交易对
+    symbols := []string{"BTC/USDT", "ETH/USDT", "BNB/USDT"} // 实际从数据库获取
+    
+    for _, symbol := range symbols {
+        currentNode := c.ch.GetNode(symbol)
+        
+        // 如果这个key应该在新节点上
+        if currentNode == newNode {
+            // 从旧节点读取数据
+            // 写入新节点
+            // 删除旧节点数据
+        }
+    }
+}
+
+func main() {
+    TestConsistentHash()
+    
+    // 交易所应用示例
+    cache := NewOrderBookCache([]string{
+        "redis-1:6379",
+        "redis-2:6379",
+        "redis-3:6379",
+    })
+    
+    // 获取BTC/USDT的订单簿
+    orderbook, _ := cache.GetOrderBook("BTC/USDT")
+    fmt.Printf("BTC/USDT 订单簿在节点: %s\n", 
+        cache.ch.GetNode("BTC/USDT"))
+}</code></pre>
+
+                    <h4>性能对比：</h4>
+                    <table>
+                        <tr>
+                            <th>方案</th>
+                            <th>节点变化时迁移量</th>
+                            <th>数据分布</th>
+                            <th>实现复杂度</th>
+                        </tr>
+                        <tr>
+                            <td>取模算法</td>
+                            <td>75%（3→4节点）</td>
+                            <td>完全均匀</td>
+                            <td>简单</td>
+                        </tr>
+                        <tr>
+                            <td>一致性Hash（无虚拟节点）</td>
+                            <td>25%</td>
+                            <td>可能不均匀</td>
+                            <td>中等</td>
+                        </tr>
+                        <tr>
+                            <td>一致性Hash（有虚拟节点）</td>
+                            <td>25%</td>
+                            <td>均匀</td>
+                            <td>稍复杂</td>
+                        </tr>
+                    </table>
+
+                    <h4>交易所应用场景：</h4>
+                    <ul>
+                        <li><strong>订单簿缓存</strong>：按交易对分布到不同Redis节点</li>
+                        <li><strong>用户会话</strong>：按用户ID分布WebSocket连接</li>
+                        <li><strong>行情推送</strong>：负载均衡到多个推送服务</li>
+                        <li><strong>撮合引擎</strong>：不同交易对路由到不同撮合节点</li>
+                    </ul>
+
+                    <div class="tip-box success">
+                        <strong>✅ 最佳实践</strong>
+                        <ul>
+                            <li>虚拟节点数量：150-200个，平衡分布均匀性和内存占用</li>
+                            <li>Hash函数：MD5或MurmurHash，保证分布均匀</li>
+                            <li>节点变化：使用灰度发布，逐步迁移数据</li>
+                            <li>监控告警：实时监控各节点负载，防止热点</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 面试模拟 -->
+            <section class="section" id="interview">
+                <h2>7. 面试模拟对话</h2>
+                
+                <div class="tip-box info">
+                    <strong>场景1：GMP 调度模型</strong>
+                    <p><strong>面试官</strong>：你在简历上写了熟悉 Go 并发，能讲讲 GMP 模型吗？</p>
+                    <p><strong>你</strong>：好的。Go 的调度器采用 GMP 模型。G 是 Goroutine，代表用户态轻量级线程；M 是 Machine，代表操作系统线程；P 是 Processor，负责调度 G 的执行。</p>
+                    <p>核心机制是：每个 P 维护一个本地 G 队列，M 需要绑定 P 才能执行 G。当 P 的本地队列为空时，会从其他 P 或全局队列偷取 G，这叫 Work Stealing。</p>
+                    <p>这种设计的优势是：减少锁竞争、充分利用多核、支持抢占式调度。</p>
+                </div>
+
+                <div class="tip-box success">
+                    <strong>场景2：撮合引擎设计</strong>
+                    <p><strong>面试官</strong>：如果让你实现一个交易所的撮合引擎，你会怎么设计？</p>
+                    <p><strong>你</strong>：我会设计一个内存撮合引擎，核心是订单簿。订单簿用两个 map 存储买卖盘，每个价格对应一个链表。</p>
+                    <p>买单按价格降序排列，卖单按价格升序排列。撮合时遵循价格优先、时间优先原则。</p>
+                    <p>为了保证性能，撮合引擎在内存中运行，通过定时快照和 WAL 日志保证数据不丢失。</p>
+                </div>
+
+                <div class="tip-box warning">
+                    <strong>场景3：余额一致性</strong>
+                    <p><strong>面试官</strong>：如何保证资产系统的余额一致性？</p>
+                    <p><strong>你</strong>：资产系统采用双账户模型：可用余额 + 冻结余额。</p>
+                    <p>流程是：下单时冻结，成交时扣除冻结，撤单时解冻。每一步都记录流水。</p>
+                    <p>在数据库层面使用事务保证原子性，定时对账检查可用+冻结是否等于总资产。</p>
+                </div>
+            </section>
+
+            <!-- 总结建议 -->
+            <section class="section" id="summary">
+                <h2>8. 总结与学习建议</h2>
+                
+                <h3>必须掌握的核心知识 ✅</h3>
+                <ol>
+                    <li><strong>Go 并发</strong>：GMP 模型、Channel、Context、锁机制</li>
+                    <li><strong>撮合引擎</strong>：订单簿设计、价格优先时间优先</li>
+                    <li><strong>资产系统</strong>：双账户模型、流水对账</li>
+                    <li><strong>限流</strong>：令牌桶算法</li>
+                    <li><strong>分布式ID</strong>：雪花算法</li>
+                    <li><strong>区块链</strong>：地址生成、交易监听</li>
+                </ol>
+
+                <h3>加分项 ⭐</h3>
+                <ul>
+                    <li>GitHub 上的交易所项目实战</li>
+                    <li>性能优化案例（pprof、GC 调优）</li>
+                    <li>线上事故处理经验</li>
+                    <li>开源贡献</li>
+                </ul>
+
+                <h3>12周学习路线 📅</h3>
+                <table>
+                    <tr>
+                        <th>周次</th>
+                        <th>学习内容</th>
+                        <th>产出</th>
+                    </tr>
+                    <tr>
+                        <td>1-2周</td>
+                        <td>Go 基础强化</td>
+                        <td>掌握并发、接口、反射</td>
+                    </tr>
+                    <tr>
+                        <td>3-4周</td>
+                        <td>交易所业务学习</td>
+                        <td>理解撮合、资产、风控</td>
+                    </tr>
+                    <tr>
+                        <td>5-6周</td>
+                        <td>系统设计学习</td>
+                        <td>阅读 DDIA，画架构图</td>
+                    </tr>
+                    <tr>
+                        <td>7-8周</td>
+                        <td>项目实战</td>
+                        <td>实现简易交易所</td>
+                    </tr>
+                    <tr>
+                        <td>9-10周</td>
+                        <td>算法刷题</td>
+                        <td>LeetCode 前 200 题</td>
+                    </tr>
+                    <tr>
+                        <td>11-12周</td>
+                        <td>模拟面试</td>
+                        <td>准备面试话术</td>
+                    </tr>
+                </table>
+
+                <div class="tip-box success">
+                    <strong>🎯 最后的建议</strong>
+                    <ul>
+                        <li>每个知识点都要手写代码，理解原理</li>
+                        <li>关注 Gate.io、币安、OKX 的技术博客</li>
+                        <li>参与开源项目，积累实战经验</li>
+                        <li>准备 3-5 个技术亮点故事</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <div class="back-to-top" id="backToTop" onclick="scrollToTop()">
+        ↑
+    </div>
+
+    <script>
+        // 代码高亮
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
+        });
+
+        // 移动端菜单控制
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+            menuToggle.classList.toggle('active');
+            
+            // 切换图标
+            if (sidebar.classList.contains('show')) {
+                menuToggle.innerHTML = '✕';
+            } else {
+                menuToggle.innerHTML = '☰';
+            }
+        }
+
+        menuToggle.addEventListener('click', toggleMenu);
+        sidebarOverlay.addEventListener('click', toggleMenu);
+
+        // 点击侧边栏链接后关闭菜单（移动端）
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 968) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // 复制代码
+        function copyCode(btn) {
+            const codeBlock = btn.parentElement.nextElementSibling.querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                btn.textContent = '已复制!';
+                setTimeout(() => {
+                    btn.textContent = '复制';
+                }, 2000);
+            });
+        }
+
+        // 回到顶部
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('backToTop');
+            if (window.pageYOffset > 300) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        });
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 监听窗口大小变化
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 968) {
+                // 桌面端自动显示侧边栏
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                menuToggle.classList.remove('active');
+                menuToggle.innerHTML = '☰';
+            }
+        });
+    </script>
+</body>
+</html>
